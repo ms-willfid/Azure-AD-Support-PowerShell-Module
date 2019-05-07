@@ -1,5 +1,6 @@
-# aad-support-psh-module
-Azure AD Support PowerShell Module
+# Azure AD Support PowerShell Module
+
+## Disclaimer
 
 Use this PowerShell module at your own risk. There is no support model for this PowerShell module except through this github repository. Please report any issues here... 
 https://github.com/ms-willfid/aad-support-psh-module/issues
@@ -12,3 +13,9 @@ Cmdlets may change at any time without notice.
 
 Best regards,
 Bill Fiddes
+
+## Install
+
+To install the Azure AD Support PowerShell Module...
+
+Install-Module AadSupport
