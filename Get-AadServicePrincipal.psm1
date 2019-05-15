@@ -106,7 +106,6 @@ function Get-AadServicePrincipal
     }
 
 }
-Export-ModuleMember -Function Get-AadServicePrincipal
 
 
 function GetAadSpByName
@@ -188,7 +187,6 @@ function Get-AadServicePrincipalAdmins() {
     Write-Host "Service Pricipals with Azure AD Admin Roles ($($list.count) Found)." -ForegroundColor Yellow
     $list | Sort-Object DisplayName, Role
 }
-Export-ModuleMember -Function Get-AadServicePrincipalAdmins
 
 
 <#
@@ -228,7 +226,7 @@ function Get-AadServicePrincipalAccess
     Get-AadServicePrincipalAppRoles -ObjectId $sp.ObjectId
     Get-AadServicePrincipalGrants -ObjectId $sp.ObjectId
 }
-Export-ModuleMember -Function Get-AadServicePrincipalAccess
+
 
 <#
 .SYNOPSIS
@@ -263,7 +261,6 @@ function Get-AadServicePrincipalAdminRoles {
     # END REGION
 
     $roles = Get-AzureADDirectoryRole
-
     $AdminRoleList = @()
 
     $AadAdminCount = 0

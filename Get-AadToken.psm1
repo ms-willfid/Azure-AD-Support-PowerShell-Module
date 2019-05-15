@@ -1,42 +1,55 @@
 ﻿<#
 .SYNOPSIS
-Get Access Token from token endpoint. Use this when using Resource Owner Password Credential flow or Client Credentials.
+Get Access Token from Azure AD token endpoint. 
 
 .DESCRIPTION
-Get Access Token from token endpoint.
+Get Access Token from Azure AD token endpoint. 
 
 .PARAMETER ClientId
-Parameter description
+Provide Client ID or App ID required to get a access token
 
 .PARAMETER ResourceId
-Parameter description
+Provide App URI ID or Service Principal Name you want to get an access token for.
 
 .PARAMETER Scopes
-Parameter description
+Provide Scopes for the request.
 
 .PARAMETER ClientSecret
-Parameter description
+Provide Client Secret if this is a Web App client.
 
-.PARAMETER ReplayAddress
-Parameter description
+.PARAMETER Redirect
+Provide Redirect URI or Redirect URL.
 
 .PARAMETER Username
-Parameter description
+Provide username if using Resource Owner Password grant flow.
 
 .PARAMETER Password
-Parameter description
+Provide Password of resource owner if using Resource Owner Password Credential grant flow.
 
 .PARAMETER Tenant
-Parameter description
+Provide Tenant ID you are authenticating to.
 
 .PARAMETER Instance
-Parameter description
+Provide Azure AD Instance you are connecting to.
 
 .PARAMETER UseV2
-Parameter description
+By default, Azure AD V1 authentication endpoints will be used. Use this if you want to use the V2 Authentication endpoints.
+
+.PARAMETER UseResourceOwner
+Enable this switch if you want to use the Resource Owner Password Credential grant flow.
+
+.PARAMETER UseClientCredential
+Enable this switch if you want to use the Client Credential grant flow.
+
+.PARAMETER UseRefreshToken
+Enable this switch if you want to use the Refresh Token grant flow.
 
 .EXAMPLE
-An example
+Use Resource Owner Password Credential grant flow
+Get-AadToken -UseResourceOwner -ResourceId "https://graph.microsoft.com" -ClientId 5567ba8a-e608-4219-97d8-3d3ea63718e7 -Redirect "https://login.microsoftonline.com/common/oauth2/nativeclient" -Username john@contoso.com -Password P@$$w0rd!
+
+To get client only access token
+Get-AadToken -UseClientCredential -ResourceId "https://graph.microsoft.com" -ClientId 5567ba8a-e608-4219-97d8-3d3ea63718e7 -ClientSecret "98iwjdc-098343js="
 
 .NOTES
 General notes
@@ -82,7 +95,7 @@ function Get-AadToken
 
         $ResourceId = "https://graph.microsoft.com",
         $Scopes = "openid email profile offline_access https://graph.microsoft.com/.default",
-        $ReplyAddress = $null,
+        $Redirect = $null,
         $Instance = "https://login.microsoftonline.com",
 
         [switch]
@@ -231,9 +244,9 @@ function Get-AadToken
     $body.nonce      = 1234
     $body.state      = 5678
 
-    if ($ReplyAddress)
+    if ($Redirect)
     {
-        $body.redirect_uri = $ReplyAddress
+        $body.redirect_uri = $Redirect
     }
 
     if ($RefreshToken)
@@ -332,56 +345,17 @@ function Get-AadToken
 
     $Headers = @{ "Authorization" = "Bearer $AccessToken" }
     $token.Headers = $Headers
+    $token.AccessTokenClaims = $token.AccessToken | ConvertFrom-AadJwtToken
+    $token.IdTokenClaims = $token.IdToken | ConvertFrom-AadJwtToken
 
     $Object = New-Object PSObject -Property $token
 
     return $Object
 }
-Export-ModuleMember -Function Get-AadToken
 
 
-# ##############################################################################################
-# HELPER FUNCTIONS
-# ##############################################################################################
 
-function ConvertFrom-AadJwtToken {
- 
-    [cmdletbinding()]
-    param([Parameter(ValueFromPipeline = $true,Mandatory=$true)][string]$token)
- 
-    #Validate as per https://tools.ietf.org/html/rfc7519
-    #Access and ID tokens are fine, Refresh tokens will not work
-    if (!$token.Contains(".") -or !$token.StartsWith("eyJ")) { Write-Error "Invalid token" -ErrorAction Stop }
-    
-    $jwtClaims = @{}
 
-    #Header
-    $tokenheader = $token.Split(".")[0]
-    
-    #Fix padding as needed, keep adding "=" until string length modulus 4 reaches 0
-    while ($tokenheader.Length % 4) { $tokenheader += "=" }
-    
-    #Convert from Base64 encoded string to PSObject all at once
-    $jwtHeader = ([System.Text.Encoding]::ASCII.GetString([system.convert]::FromBase64String($tokenheader)) | ConvertFrom-Json)
-
-    $jwtHeader.psobject.properties | Foreach { $jwtClaims[$_.Name] = $_.Value }
-
-    #Payload
-    $tokenPayload = $token.Split(".")[1]
-    
-    #Fix padding as needed, keep adding "=" until string length modulus 4 reaches 0
-    while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
-    
-    #Convert from Base64 encoded string to PSObject all at once
-    $jwtPayload = ([System.Text.Encoding]::ASCII.GetString([system.convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json)
-
-    $jwtPayload.psobject.properties | Foreach { $jwtClaims[$_.Name] = $_.Value }
-
-    $Object = New-Object PSObject -Property $jwtClaims
-
-    return $Object
-}
-Export-ModuleMember -Function ConvertFrom-AadJwtToken
 
 
 # ##############################################################################################

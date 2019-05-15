@@ -67,7 +67,7 @@ function Get-AadDateTime {
 
     return (Get-Date $date -Format o)
 }
-Export-ModuleMember -Function Get-AadDateTime
+
 
 <#
 .SYNOPSIS
@@ -89,7 +89,7 @@ General notes
 
 function Convert-AadJwtTime {
     Param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(ValueFromPipeline = $true,Mandatory=$true)]
         [string]
         $JwtDateTime
     )
@@ -97,4 +97,3 @@ function Convert-AadJwtTime {
     $date = (Get-Date -Date "1/1/1970").AddSeconds($JwtDateTime)
     return $date
 }
-Export-ModuleMember -Function Convert-AadJwtTime

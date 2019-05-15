@@ -18,4 +18,4 @@ Bill Fiddes
 
 To install the Azure AD Support PowerShell Module...
 
-Install-Module AadSupport
+> Install-Module AadSupport
