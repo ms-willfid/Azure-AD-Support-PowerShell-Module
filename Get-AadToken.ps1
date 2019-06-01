@@ -59,7 +59,7 @@ function Get-AadToken
 {
     [CmdletBinding(DefaultParameterSetName="All")] 
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, Position=0)]
         $ClientId,
 
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$false)]
@@ -78,7 +78,7 @@ function Get-AadToken
         $Username = $null,
 
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$true)]
-        $Password = $null,
+        [string]$Password = $null,
 
         [Parameter(ParameterSetName="UseClientCredential", Mandatory=$true)]
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$false)]
@@ -87,13 +87,14 @@ function Get-AadToken
 
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$true)]
         $RefreshToken,
+
+        $ResourceId = "https://graph.microsoft.com",
         
         [Parameter(ParameterSetName="UseClientCredential", Mandatory=$true)]
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$false)]
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$false)]
         $Tenant,
 
-        $ResourceId = "https://graph.microsoft.com",
         $Scopes = "openid email profile offline_access https://graph.microsoft.com/.default",
         $Redirect = $null,
         $Instance = "https://login.microsoftonline.com",
@@ -104,7 +105,25 @@ function Get-AadToken
 
     $error.Clear()
     $scriptError = $null
+
+    # Get Service Principal
+    $sp = Get-AadServicePrincipal -Id $ClientId
+
+    if($sp.count -gt 1)
+    {
+        throw "Found too many results for '$ClientId'. Please specify a unique ClientId."
+    }
+
+    # Get real Client ID
+    $ClientId = $sp.AppId
+
+    # Get Redirect Uri if not one specified
+    if(-not $Redirect) 
+    {
+        $Redirect = $sp.ReplyUrls[0]
+    }
     
+
     # Set Grant_Type
     if (-not $UseResourceOwner -and -not $UseClientCredential -and -not $UseRefreshToken)
     {
@@ -150,21 +169,21 @@ function Get-AadToken
         } while (-not $isValidChoice)
     }
 
+    # Requirements for Resource Owner
     if ($UseResourceOwner)
     {
         $GrantType = "password"
-    }
-
-    if ($UseClientCredential)
-    {
         
-    }
+        if (-not $Username)
+        {
+            $Username = Read-Host -Prompt "Username"
+        }
 
-    if ($UseRefreshToken)
-    {
-        $GrantType = "refresh_token"
+        if (-not $Password)
+        {
+            $Password = Read-Host -Prompt "Password"
+        }
     }
-
 
     # Requirements for ClientCredentials
     if($UseClientCredential)
@@ -182,24 +201,6 @@ function Get-AadToken
         }
     }
 
-
-    # Requirements for Resource Owner
-    if($UseResourceOwner)
-    {
-        $GrantType = "password"
-        
-        if (-not $Username)
-        {
-            $Username = Read-Host -Prompt "Username"
-        }
-
-        if (-not $Password)
-        {
-            $Password = Read-Host -AsSecureString -Prompt "Password"
-        }
-    }
-
-
     # Requirements for Refresh Token
     if($UseRefreshToken)
     {
@@ -209,6 +210,7 @@ function Get-AadToken
             $RefreshToken = Read-Host -Prompt "Refresh Token"
         }
     }
+
 
 
     # Set default Tenant
@@ -259,6 +261,7 @@ function Get-AadToken
     }
 
     if ($Username -and $Password) {
+        
         $body.username   = $Username
         $body.password   = $Password
         $body.grant_type = "password"
@@ -286,29 +289,23 @@ function Get-AadToken
         if ($content.id_token)       { $token.IdToken = $content.id_token }
         if ($content.refresh_token)  { $token.RefreshToken = $content.refresh_token }
         if ($content.Type)           { $token.Type = $content.Type }
-        if ($content.scope)          { $token.scope = $content.scope }
+        if ($content.scope)          { $token.Scopes = $content.scope }
         if ($content.expires_in)     { $token.expires_in = $content.expires_in }
         if ($content.ext_expires_in) { $token.ext_expires_in = $content.ext_expires_in }
         if ($content.expires_on)     { $token.expires_on = $content.expires_on }
         if ($content.not_before)     { $token.not_before = $content.not_before }
         if ($content.resource)       { $token.resource = $content.resource }
 
-        if($IdToken) {
-            Write-Verbose ""
-            Write-Verbose "++++++++++++++++++++++++++++"
-            Write-Verbose "ID Token"
-            Write-Verbose ""
-            Write-Verbose $IdToken
-            Write-Verbose ""
+        if($token.AccessToken)
+        {
+            $Headers = @{ "Authorization" = "Bearer $AccessToken" }
+            $token.Headers = $Headers
+            $token.AccessTokenClaims = $token.AccessToken | ConvertFrom-AadJwtToken
         }
 
-        if($AccessToken) {
-            Write-Verbose ""
-            Write-Verbose "++++++++++++++++++++++++++++"
-            Write-Verbose "Access Token"
-            Write-Verbose ""
-            Write-Verbose $AccessToken
-            Write-Verbose ""
+        if($token.IdToken)
+        {
+            $token.IdTokenClaims = $token.IdToken | ConvertFrom-AadJwtToken
         }
     }
 
@@ -343,13 +340,19 @@ function Get-AadToken
         return $token
     }
 
-    $Headers = @{ "Authorization" = "Bearer $AccessToken" }
-    $token.Headers = $Headers
-    $token.AccessTokenClaims = $token.AccessToken | ConvertFrom-AadJwtToken
-    $token.IdTokenClaims = $token.IdToken | ConvertFrom-AadJwtToken
+    
 
     $Object = New-Object PSObject -Property $token
 
+    if($Object.AccessToken)
+    {
+        Write-Host ""
+        Write-Host "Access Token" -ForegroundColor Yellow
+        $AccessToken = $Object.AccessToken
+        Write-Host $AccessToken
+    }
+    
+    
     return $Object
 }
 

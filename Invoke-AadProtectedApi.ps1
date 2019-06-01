@@ -54,27 +54,26 @@ function Invoke-AadProtectedApi
        [switch]
        $GET,
 
-       [Parameter(ParameterSetName="HttpRequestBody", Mandatory=$True)]
        [Parameter(ParameterSetName="HttpMethodPatch", Mandatory=$True)]
        [switch]
        $PATCH,
 
-       [Parameter(ParameterSetName="HttpRequestBody", Mandatory=$True)]
        [Parameter(ParameterSetName="HttpMethodPost", Mandatory=$True)]
        [switch]
        $POST,
 
-       [Parameter(ParameterSetName="HttpRequestBody", Mandatory=$True)]
        [Parameter(ParameterSetName="HttpMethodDelete", Mandatory=$True)]
        [switch]
        $DELETE,
 
-       [Parameter(ParameterSetName="HttpRequestBody", Mandatory=$True)]
        [Parameter(ParameterSetName="HttpMethodPut", Mandatory=$True)]
        [switch]
        $PUT,
 
-       [Parameter(ParameterSetName="HttpRequestBody", Mandatory=$True)]
+       [Parameter(ParameterSetName="HttpMethodPost", Mandatory=$True)]
+       [Parameter(ParameterSetName="HttpMethodPut", Mandatory=$True)]
+       [Parameter(ParameterSetName="HttpMethodPatch", Mandatory=$True)]
+       [Parameter(ParameterSetName="HttpMethodDelete", Mandatory=$True)]
        [string]
        $Body,
 

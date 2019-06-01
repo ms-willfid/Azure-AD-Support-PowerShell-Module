@@ -81,22 +81,24 @@ function Get-AadTokenUsingAdal
 {
     [CmdletBinding(DefaultParameterSetName="All")] 
     param(
-        [Parameter(Mandatory=$true)]
-        $ResourceId,
-
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         $ClientId,
 
-        [Parameter(ParameterSetName="UserAccessToken", Mandatory=$true)]
+        $ResourceId = "https://graph.microsoft.com",
+
+        [Parameter(ParameterSetName="UserAccessToken", Mandatory=$false)]
         [Parameter(ParameterSetName="ClientAccessToken", Mandatory=$false)]
         $Redirect,
 
         [Parameter(ParameterSetName="UserAccessToken", Mandatory=$false)]
         $UserId,
 
+        [Parameter(ParameterSetName="UserAccessToken", Mandatory=$false)]
+        $DomainHint,
+
         [Parameter(Mandatory=$false)]
         [ValidateSet('Always','Auto','SelectAccount','RefreshSession','Never')]
-        $Prompt = 'Always',
+        $Prompt,
 
         $Tenant = "common",
 
@@ -107,13 +109,53 @@ function Get-AadTokenUsingAdal
         $UseClientCredential,
 
         [Parameter(ParameterSetName="ClientAccessToken", Mandatory=$true)]
-        $ClientSecret
+        $ClientSecret,
+
+        [switch]
+        $SkipServicePrincipalSearch
     )
 
+    $details = @{}
+
+    # Get Service Principal
+    if(-not $SkipServicePrincipalSearch)
+    {
+        $sp = Get-AadServicePrincipal -Id $ClientId
+        $ClientId = $sp.AppId
+        $Redirect = $sp.ReplyUrls[0]
+    }
     
+
+    if($sp.count -gt 1)
+    {
+        throw "Found too many results for '$ClientId'. Please specify a unique ClientId."
+    }
+
     $aadContext = [AadContext]::new()
     $aadContext.TenantName = $Tenant
     $aadContext.AadInstance = $Instance
+
+    $details.AppId = $ClientId
+    $details.ReplyAddress = $Redirect
+    $details.Audience = $ResourceId
+
+
+    if(-not $UserId -and -not $Prompt)
+    {
+        $UserId = $Global:AadSupport.Session.AccountId
+    }
+
+    $ExtraQueryParams = ""
+    if ($UserId)
+    {
+        $ExtraQueryParams += "&login_hint=$UserId"
+    }
+    if ($DomainHint)
+    {
+        $ExtraQueryParams += "&domain_hint=$DomainHint"
+    }
+
+    
 
     if ($UseClientCredential)
     {
@@ -124,18 +166,41 @@ function Get-AadTokenUsingAdal
 
         $result = $aadContext.AcquireToken($ResourceId,$ClientId,$ClientSecret) | ConvertFrom-Json
     }
+
     else 
     {
-        try {
-            $result = $aadContext.AcquireSilentToken($ResourceId,$ClientId,$UserId) | ConvertFrom-Json
-        }
-        catch{
-            $result = $aadContext.AcquireToken($ResourceId,$ClientId,$Redirect,$Prompt) | ConvertFrom-Json
-        }
+
+            try {
+                if(-not $Prompt)
+                {
+                    $result = $aadContext.AcquireSilentToken($ResourceId,$ClientId,$UserId) | ConvertFrom-Json
+                }
+
+                else {
+                    $result = $aadContext.AcquireToken($ResourceId,$ClientId,$Redirect,$Prompt,$UserId, $ExtraQueryParams) | ConvertFrom-Json
+                
+                }
+            }    
+
+            catch{
+                $result = $aadContext.AcquireToken($ResourceId,$ClientId,$Redirect,"Auto",$UserId, $ExtraQueryParams) | ConvertFrom-Json
+                
+            }
         
     }
 
-    $details = @{}
+    if($result.Error)
+            {
+                $details.Error = $result.Error.Exception
+
+                Write-Host ""
+                Write-Host "Error" -ForegroundColor Yellow
+                $AadError = $details.Error
+                Write-Host $AadError -ForegroundColor Red
+
+                return $details
+            }
+
     foreach($member in $result | Get-member)
     {
         if ($member.MemberType -eq 'NoteProperty')
@@ -146,7 +211,24 @@ function Get-AadTokenUsingAdal
         
     }
 
+    $Headers = @{ "Authorization" = "Bearer $AccessToken" }
+    $details.Headers = $Headers
+    $details.AccessTokenClaims = $details.AccessToken | ConvertFrom-AadJwtToken
+    $details.TenantId = $details.AccessTokenClaims.tid
+    $details.Scopes = $details.AccessTokenClaims.scp
+    $details.Roles = $details.AccessTokenClaims.Roles
+    if($details.IdToken) { $details.IdTokenClaims = $details.IdToken | ConvertFrom-AadJwtToken }
+
     $Object = New-Object -TypeName PSObject -Property $details
+    
+    if($Object.AccessToken)
+    {
+        Write-Verbose ""
+        Write-Verbose "Access Token" 
+        $AccessToken = $Object.AccessTokenClaims
+        Write-Verbose $AccessToken
+    }
+
     return $Object
 }
 
@@ -172,7 +254,7 @@ class AadContext {
     # ----------------------------------------------------------------------------
     # AcquireToken
     # Method to help get Azure AD tokens (Interactive flow)
-    [string]AcquireToken([string]$_ResourceId, [string]$_ClientID, [string]$_RedirectURI, [string]$_PromptBehavior)
+    [string]AcquireToken([string]$_ResourceId, [string]$_ClientID, [string]$_RedirectURI, [string]$_PromptBehavior, [string]$_UserId, [string]$_ExtraQueryParams)
     {
         $_TenantName = $this.TenantName
         $_AadInstance = $this.AadInstance 
@@ -182,32 +264,51 @@ class AadContext {
         if($null -eq $_TenantName -or $_TenantName -eq "")
         {
             $result.Error = "Tenant Name required!"
-            return $result
+            return $result | ConvertTo-Json
         }
 
         if($null -eq $_ClientID -or $_ClientID -eq "")
         {
             $result.Error = "Client ID required!"
-            return $result
+            return $result | ConvertTo-Json
         }
 
+        
         if($null -eq $_RedirectURI -or $_RedirectURI -eq "")
         {    
             $result.Error = "Redirect URI required!"
-            return $result
+            return $result | ConvertTo-Json
         }   
+
         if($null -eq $_ResourceId -or $_ResourceId -eq "")
         {    
             $result.Error = "Resource Id required!"
-            return $result
+            return $result | ConvertTo-Json
         }
+
         if($_PromptBehavior -ne "Always" -and $_PromptBehavior -ne "Auto" -and $_PromptBehavior -ne "SelectAccount" -and $_PromptBehavior -ne "Never" -and $_PromptBehavior -ne "RefreshSession")
         {    
             $result.Error = "Prompt Behavior required!"
-            return $result
+            return $result | ConvertTo-Json
         }
         
         $promptBehavior = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior"
+
+        
+        # Set UserIdentifier
+        $UserIdentifier = $null
+        if($_UserId)
+        {
+            $UserType = [Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifierType]::RequiredDisplayableId 
+            $UserIdentifier = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier" -ArgumentList $_UserId,$UserType 
+        }
+
+        # If UserIdentifier not set yet from above...
+        if(-not $UserIdentifier)
+        {
+            $UserIdentifier = [Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier]::AnyUser
+        }
+        
 
 
         #Build the logon URL with the tenant name
@@ -217,7 +318,7 @@ class AadContext {
         #Build the auth context and get the result
         $authContext = $null
         $authContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authority
-        
+
         $authResult = $null
 
         $platformParameters = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehavior::$_PromptBehavior
@@ -226,21 +327,34 @@ class AadContext {
         Try
         {
             
-            $request = $authContext.AcquireTokenAsync($_ResourceId, $_ClientId, $_RedirectUri, $platformParameters)
-            
-            #$userId = "admin@williamfiddes.onmicrosoft.com"
-            #$authResult =  $authContext.AcquireTokenAsync($_ResourceId, $_ClientId, $_RedirectUri, $platformParameters, $userId)
+
+            if($_UserId -and $_ExtraQueryParams)
+            {
+                $RebuildQueryParams = @()
+                $SplitQueryParams = $_ExtraQueryParams.Split("&")
+
+
+                foreach($item in $SplitQueryParams)
+                {
+                    if(-not ($item -match "login_hint")) 
+                    {
+                        $RebuildQueryParams += $item
+                    }
+                }
+
+                $_ExtraQueryParams = $RebuildQueryParams -join "&"
+            }
+
+            $request = $authContext.AcquireTokenAsync($_ResourceId, $_ClientID, $_RedirectURI, $platformParameters, $UserIdentifier, $_ExtraQueryParams)
             $result = $request.GetAwaiter().GetResult()
 
-            if ($result.Exception -ne $null) {
-                Write-Output "Exception: " $result.Exception
-            }
+            
 
         }
         Catch  #[System.Management.Automation.MethodInvocationException]
         {
             $result.Error = $_
-            return $result
+            return ($result | ConvertTo-Json)
         }
 
         
@@ -254,6 +368,8 @@ class AadContext {
     # AcquireToken - CLIENT CREDENTIALS
     [string]AcquireToken([string]$_ResourceId, [string]$_ClientID, [string]$_ClientSecret)
     {
+        $return = @{}
+
         $_TenantName = $this.TenantName
         $_AadInstance = $this.AadInstance
 
@@ -287,6 +403,7 @@ class AadContext {
         $AdClientCreds = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential" -ArgumentList $_ClientID, $_ClientSecret
         
         Write-Verbose "Attempting client credentials authentication"
+        $result = $null
         try {
             $request = $authContext.AcquireTokenAsync($_ResourceId, $AdClientCreds)
 
@@ -294,18 +411,21 @@ class AadContext {
         }
         Catch  #[System.Management.Automation.MethodInvocationException]
         {
-            throw $_
+            $return.Error = $_
+            return $return | ConvertTo-Json
         }
 
         #Return the authentication token
-        return ($result | ConvertTo-Json)
+        return $result | ConvertTo-Json
     }
 
 
         # ----------------------------------------------------------------------------
-    # AcquireToken - CLIENT CREDENTIALS
+    # AcquireToken - Acquire Token Silently
     [string]AcquireSilentToken([string]$_ResourceId, [string]$_ClientID, [string]$_UserId)
     {
+        $return = @{}
+
         $_TenantName = $this.TenantName
         $_AadInstance = $this.AadInstance
 
@@ -319,6 +439,7 @@ class AadContext {
             throw "Resource Id required!"
         }
 
+        # Set UserIdentifier
         if(-not $_UserId)
         {
             $UserIdentifier = [Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier]::AnyUser
@@ -346,6 +467,7 @@ class AadContext {
         }
         Catch  #[System.Management.Automation.MethodInvocationException]
         {
+            $return.Error = $_
             throw $_
         }
 

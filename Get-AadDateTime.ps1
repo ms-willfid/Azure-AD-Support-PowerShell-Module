@@ -40,7 +40,9 @@ function Get-AadDateTime {
         $DateTime, 
         $AddDays, 
         $AddHours, 
-        $AddMinutes
+        $AddMinutes,
+        $AddYears,
+        $AddMonths
     )
 
     if ($DateTime) 
@@ -65,35 +67,13 @@ function Get-AadDateTime {
         $date = $date.AddMinutes($AddMinutes)
     }
 
+    if ($AddYears) {
+        $date = $date.AddYears($AddYears)
+    }
+
+    if ($AddMonths) {
+        $date = $date.AddMonths($AddMonths)
+    }
+
     return (Get-Date $date -Format o)
-}
-
-
-<#
-.SYNOPSIS
-Convert the long number format from JWT tokens to UTC
-
-.DESCRIPTION
-Convert the long number format from JWT tokens to UTC
-For example convert '1557162946' to '2019-05-06T22:15:46.0000000Z'
-
-.PARAMETER JwtNumberDateTime
-This is the JWT number format (i.e. 1557162946)
-
-.EXAMPLE
-Convert-AadJwtTime 1557162946
-
-.NOTES
-General notes
-#>
-
-function Convert-AadJwtTime {
-    Param (
-        [Parameter(ValueFromPipeline = $true,Mandatory=$true)]
-        [string]
-        $JwtDateTime
-    )
-
-    $date = (Get-Date -Date "1/1/1970").AddSeconds($JwtDateTime)
-    return $date
 }
