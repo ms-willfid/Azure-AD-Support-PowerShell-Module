@@ -14,9 +14,8 @@ General notes
 #>
 
 function Get-AadServicePrincipalAdmins() {
-    # REQUIRE AadSupport
-    if($global:AadSupportModule) 
-    { Connect-AadSupport }
+    # REQUIRE AadSupport Session
+    RequireConnectAadSupport
     # END REGION
 
     $roles = Get-AzureADDirectoryRole | Sort-Object DisplayName

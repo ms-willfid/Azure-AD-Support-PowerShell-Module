@@ -25,9 +25,8 @@ function Get-AadServicePrincipalAccess
         $Id
     )
 
-    # REQUIRE AadSupport
-    if($global:AadSupportModule) 
-    { Connect-AadSupport }
+    # REQUIRE AadSupport Session
+    RequireConnectAadSupport
     # END REGION
 
     $TenantDomain = $Global:AadSupport.Session.TenantDomain
@@ -63,6 +62,10 @@ function Get-AadServicePrincipalAccess
     Write-Host "++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     Write-Host "Getting Key Vault Access assigned to Service Principal..." -ForegroundColor Yellow
     Get-AadServicePrincipalKeyVaultAccess -ObjectId $sp.ObjectId
+
+    Write-Host "++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    Write-Host "Getting Azure Roles assigned to Service Principal..." -ForegroundColor Yellow
+    Get-AadServicePrincipalAzureRoles -Id $sp.ServicePrincipalNames[0]
 }
 
 
@@ -92,11 +95,6 @@ function Get-AadServicePrincipalAdminRoles {
         $ObjectId
     )
 
-    
-    # REQUIRE AadSupport
-    if($Global:AadSupportModule) 
-    { Connect-AadSupport }
-    # END REGION
 
     $roles = Get-AzureADDirectoryRole
     $AdminRoleList = @()
@@ -158,12 +156,6 @@ function Get-AadServicePrincipalGrants {
         $ObjectId
     )
 
-
-    # REQUIRE AadSupport
-    if($global:AadSupportModule) 
-    { Connect-AadSupport }
-    # END REGION
-
     $GrantList = @()
 
     $grants = Get-AzureADServicePrincipalOAuth2PermissionGrant -ObjectId $ObjectId
@@ -207,53 +199,103 @@ function Get-AadServicePrincipalGrants {
 
 function Get-AadServicePrincipalKeyVaultAccess {
     # THIS FUNCTION IS STANDALONE
-        param(
-            [Parameter(
-                mandatory=$true,
-                ValueFromPipeline = $true)]
-            $ObjectId
-        )
-    
+    param(
+        [Parameter(
+            mandatory=$true,
+            ValueFromPipeline = $true)]
+        $ObjectId
+    )
+
+    $subscriptions = Get-AzSubscription -TenantId $Global:AadSupport.Session.TenantId
+
+    $Policies = @()
+
+    $count = 0
+    foreach($sub in $subscriptions) {
         
-        # REQUIRE AadSupport
-        if($global:AadSupportModule) 
-        { Connect-AadSupport }
-        # END REGION
-
-        $subscriptions = Get-AzSubscription -TenantId $Global:AadSupport.Session.TenantId
-
-        $Policies = @()
-
-        $count = 0
-        foreach($sub in $subscriptions) {
-            
-            if($sub.Name -ne "Access to Azure Active Directory")
+        if($sub.Name -ne "Access to Azure Active Directory")
+        {
+            Write-Verbose "Checking Subscription '$($sub.Name) (Id:$($sub.id))'  "
+            Set-AzContext -SubscriptionId $sub.id | Out-Null
+            $KeyVaults = Get-AzKeyVault
+            foreach($KeyVaultItem in $KeyVaults)
             {
-                Write-Host "Checking Subscription '$($sub.Name) (Id:$($sub.id))'  "
-                Set-AzContext -SubscriptionId $sub.id | Out-Null
-                $KeyVaults = Get-AzKeyVault
-                foreach($KeyVaultItem in $KeyVaults)
+                $KeyVaultName = $KeyVaultItem.VaultName
+                Write-Verbose "Checking Key Vault '$KeyVaultName'"
+                $kv = Get-AzKeyVault -VaultName $KeyVaultName
+                foreach($policy in $kv.AccessPolicies)
                 {
-                    $KeyVaultName = $KeyVaultItem.VaultName
-                    Write-Host "Checking Key Vault '$KeyVaultName'"
-                    $kv = Get-AzKeyVault -VaultName $KeyVaultName
-                    foreach($policy in $kv.AccessPolicies)
+                    if($policy.ObjectId -eq $ObjectId)
                     {
-                        if($policy.ObjectId -eq $ObjectId)
-                        {
-                            $policy = $policy | Select-Object PermissionsToKeys, PermissionsToSecrets, PermissionsToCertificates, PermissionsToStorage
-                            $policy | Format-List -Force
-                            $count++
-                        }
+                        $CustomResult = [ordered]@{}
+                        $CustomResult.KeyVaultName = $KeyVaultName
+                        $CustomResult.PermissionsToSecrets = $policy.PermissionsToSecrets
+                        $CustomResult.PermissionsToKeys = $policy.PermissionsToKeys
+                        $CustomResult.PermissionsToCertificates = $policy.PermissionsToCertificates
+                        $CustomResult.PermissionsToStorage = $policy.PermissionsToStorage
+                        
+                        Write-ObjectToHost $CustomResult
+                        $count++
                     }
-
-                    if ($count -eq 0) {
-                        Write-Host "None"
-                        Write-Host ""
-                    }
-
-                    $count = 0
                 }
+
+                if ($count -eq 0) {
+                    Write-Host "None"
+                    Write-Host ""
+                }
+
+                $count = 0
             }
         }
     }
+}
+
+
+
+function Get-AadServicePrincipalAzureRoles {
+    # THIS FUNCTION IS STANDALONE
+    param(
+        [Parameter(
+            mandatory=$true,
+            ValueFromPipeline = $true)]
+        $Id
+    )
+
+    $subscriptions = Get-AzSubscription -TenantId $Global:AadSupport.Session.TenantId
+
+    $Count = 0
+    foreach($sub in $subscriptions) {
+        
+        if($sub.Name -ne "Access to Azure Active Directory")
+        {
+            Write-Verbose "Checking Subscription '$($sub.Name) (Id:$($sub.id))'  "
+            Set-AzContext -SubscriptionId $sub.id | Out-Null
+
+            # Get Role Assignments
+            $RoleAssignments = Get-AzRoleAssignment -ServicePrincipalName $Id
+
+            # If Role Assignment > Write to screen
+            if($RoleAssignments)
+            {
+                foreach($Role in $RoleAssignments)
+                {
+                    $CustomResult = [ordered]@{}
+                    $CustomResult.Scope = $Role.Scope
+                    $CustomResult.RoleName = $Role.RoleDefinitionName
+    
+                    Write-ObjectToHost $CustomResult 
+                }
+                
+                $Count++
+            }
+        }
+    }
+
+    if($Count = 0)
+    {
+        Write-Host "None"
+        Write-Host ""
+    }
+
+    return
+}

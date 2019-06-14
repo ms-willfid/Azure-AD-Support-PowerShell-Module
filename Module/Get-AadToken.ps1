@@ -103,6 +103,10 @@ function Get-AadToken
         $UseV2 = $false
     )
 
+    # REQUIRE AadSupport Session
+    RequireConnectAadSupport
+    # END REGION
+
     $error.Clear()
     $scriptError = $null
 
@@ -190,9 +194,9 @@ function Get-AadToken
     {
         $GrantType = "client_credentials"
 
-        if (-not $Tenant)
+        if (-not $Tenant -or $Tenant -eq "common")
         {
-            $Tenant = Read-Host -Prompt "Tenant"
+            $Tenant = Read-Host -Prompt "Tenant (Do not use 'common')"
         }
 
         if (-not $ClientSecret)
@@ -344,12 +348,23 @@ function Get-AadToken
 
     $Object = New-Object PSObject -Property $token
 
+    <#
     if($Object.AccessToken)
     {
         Write-Host ""
         Write-Host "Access Token" -ForegroundColor Yellow
         $AccessToken = $Object.AccessToken
         Write-Host $AccessToken
+    }
+    #>
+
+    if($Object.AccessToken -and -not $HideOutput)
+    {
+        
+        Write-Host ""
+        Write-Host "Access Token" -ForegroundColor Yellow
+        $AccessTokenClaims = $Object.AccessTokenClaims
+        Write-ObjectToHost $AccessTokenClaims
     }
     
     

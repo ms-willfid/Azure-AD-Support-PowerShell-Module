@@ -37,7 +37,9 @@ function Get-AadTenantAdmins {
     )
     
     begin {
-        Connect-AadSupport
+        # REQUIRE AadSupport Session
+        RequireConnectAadSupport
+        # END REGION
 
         try {
             $isGuid = [System.Guid]::Parse($Id)

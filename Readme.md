@@ -19,3 +19,15 @@ Bill Fiddes
 To install the Azure AD Support PowerShell Module...
 
 > Install-Module AadSupport
+
+## Version History
+0.2.6
+* Now forcing user to call Connect-AadSupport
+* Added Delete HttpMethod for Invoke-AadProtectedApi
+* Added Get-AadApplication (Alias Get-AadApp)
+* When calling Get-AadToken or Get-AadTokenUsingAdal, Access Token claims are not printed to screen
+* When multiple results are returned from Get-AadServicePrincipal, Now presents user with dialog to pick one
+* Added Azure Roles to Service Principal Access (Get-AadServicePrincipalAccess)
+* Added cmdlet to export Azure Role Assignments
+* Added cmdlet to import Azure Role Assignments
+* Fixed some bugs with getting tokens silently

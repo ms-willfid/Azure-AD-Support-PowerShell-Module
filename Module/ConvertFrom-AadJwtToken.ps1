@@ -29,7 +29,7 @@ function ConvertFrom-AadJwtToken {
     #Access and ID tokens are fine, Refresh tokens will not work
     if (!$token.Contains(".") -or !$token.StartsWith("eyJ")) { Write-Error "Invalid token" -ErrorAction Stop }
     
-    $jwtClaims = @{}
+    $jwtClaims = [ordered]@{}
 
     #Header
     $tokenheader = $token.Split(".")[0]
@@ -52,16 +52,24 @@ function ConvertFrom-AadJwtToken {
     $jwtPayload = ([System.Text.Encoding]::ASCII.GetString([system.convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json)
 
     $claims = $jwtPayload.psobject.properties
+
+    
     Foreach ($claim in $claims) 
     { 
         if($claim.Name -eq "iat" -or $claim.Name -eq "exp" -or $claim.Name -eq "nbf") 
         {
-            $jwtClaims[$claim.Name] = $claim.Value | Convert-AadJwtTime
+            $jwtClaims.Add($claim.Name, ($claim.Value | Convert-AadJwtTime) )
         }
 
-        else { $jwtClaims[$claim.Name] = $claim.Value }
-        
+        else 
+        { 
+            $jwtClaims.Add($claim.Name,$claim.Value)
+        }
+
+
     }
 
-    return $jwtClaims
+    $Object = New-Object -TypeName psobject -Property $jwtClaims
+
+    return $Object
 }

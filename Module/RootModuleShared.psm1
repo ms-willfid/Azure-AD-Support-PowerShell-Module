@@ -38,6 +38,7 @@ Export-ModuleMember -Function Convert-AadBase64StringToThumbprint
 Export-ModuleMember -Function ConvertFrom-AadBase64Certificate
 Export-ModuleMember -Function Get-AadTokenUsingAdal
 Export-ModuleMember -Function Get-AadToken
+Export-ModuleMember -Function Get-AadApplication
 Export-ModuleMember -Function Get-AadServicePrincipal
 Export-ModuleMember -Function Get-AadServicePrincipalAdmins
 Export-ModuleMember -Function Get-AadServicePrincipalAccess
@@ -46,7 +47,11 @@ Export-ModuleMember -Function Get-AadDateTime
 Export-ModuleMember -Function Get-AadTenantAdmins
 Export-ModuleMember -Function Invoke-AadProtectedApi
 Export-ModuleMember -Function Set-AadConsent
+Export-ModuleMember -Function Import-AadAzureRoleAssignments
+Export-ModuleMember -Function Export-AadAzureRoleAssignments
+Export-ModuleMember -Function Update-AadSupport
 
+Export-ModuleMember -Alias Get-AadApp
 Export-ModuleMember -Alias Get-AadSp
 Export-ModuleMember -Alias Get-AadSpAdmins
 Export-ModuleMember -Alias Get-AadSpAccess

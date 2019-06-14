@@ -11,10 +11,10 @@ foreach($script in $scripts) {
 # Check if update is available
 $remote_module = Find-Module -Name AadSupport
 $local_module = Get-Module -ListAvailable -Name AadSupport
-if ($remote_module.Version -ne $local_module.Version.toString()) {
+if ($local_module -and $remote_module.Version -ne $local_module.Version.toString()) {
     Write-Host ""
     Write-Host "There is a update available for AadSupport" -ForegroundColor Yellow
-    Write-Host "Run 'Update-Module -Name AadSupport -Force -AllowClobber'"
+    Write-Host "Run the following command... 'Update-AadSupport'"
 }
 
 # Check if Azure AD PowerShell is installed
@@ -25,11 +25,23 @@ $AzureModule = Get-Module -ListAvailable -Name Az.Accounts
 if ($modulep)
 {
     $ModuleName = "AzureADPreview"
+    if($modulep.Version.ToString() -lt "2.0.2.17")
+    {
+        Write-Host ""
+        Write-Host "Please update your AzureAdPreview PowerShell Module..." -ForegroundColor Yellow
+        Write-Host "Run... 'Install-Module AzureAdPreview -Force -AllowClobber'" -ForegroundColor Yellow
+    }
 }
 
 if ($module)
 {
     $ModuleName = "AzureAD"
+    if($module.Version.ToString() -lt "2.2.0.16")
+    {
+        Write-Host ""
+        Write-Host "Please update your AzureAd PowerShell Module..." -ForegroundColor Yellow
+        Write-Host "Run... 'Install-Module AzureAd -Force -AllowClobber'" -ForegroundColor Yellow
+    }
 }
 
 # Install Azure AD PowerShell if not installed
@@ -47,8 +59,19 @@ elseif (-not $module -and -not $modulep) {
     }
 }
 
+
+if ($AzureModule)
+{
+    if($AzureModule.Version.ToString() -lt "2.2.0")
+    {
+        Write-Host ""
+        Write-Host "Please update your Az PowerShell Module..." -ForegroundColor Yellow
+        Write-Host "Run... 'Install-Module Az -Force -AllowClobber'" -ForegroundColor Yellow
+    }
+}
+
 # Check if Azure  PowerShell is installed
-if(-not $AzureModule) {
+elseif(-not $AzureModule) {
     Write-Host ""
     Write-Host "(Az)ure PowerShell module not installed!" -ForegroundColor Yellow
     Write-Host "Attempting to install (Az)ure PowerShell module..." -ForegroundColor Yellow
@@ -76,7 +99,6 @@ Try
 Catch
 {
     Write-Warning "Unable to load ADAL assemblies.`nUpdate the AzureAd module by running Install-Module AzureAd -Force -AllowClobber"
-    Throw $error[0]
 }
         
 

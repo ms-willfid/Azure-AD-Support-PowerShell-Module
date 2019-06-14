@@ -70,9 +70,14 @@ function Set-AadConsent {
         $Expires = (Get-AadDateTime -AddMonths 12)
     )
 
+    # REQUIRE AadSupport Session
+    RequireConnectAadSupport
+    # END REGION
+
     # This CmdLet shows output
     Write-Host ""
-    Write-Host "WARNING - Do not use this as a permanent solution." -ForegroundColor Yellow
+    Write-Host "WARNING - Do not use this as a permanent solution. This is a workaround. " -ForegroundColor Yellow
+    Write-Host "WARNING - Please ensure the Application registration is correctly configured." -ForegroundColor Yellow
     Write-Host "WARNING - Do not use this within your own Scipts to programmatically consent" -ForegroundColor Yellow
     Read-Host -Prompt "Press any key to continue or CTRL+C to quit" 
     Write-Host ""

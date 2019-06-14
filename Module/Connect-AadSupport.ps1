@@ -93,67 +93,92 @@ function Connect-AadSupport
     if($NewSession)
     {
         $Global:AadSupport.Session.Active = $false
+        $Global:AadSupport.Session.TenantDomain = $null
+        $Global:AadSupport.Session.TenantId = $null
+        $Global:AadSupport.Session.AccountId = $null
     }
 
     # Connect to Azure AD PowerShell
 
         try {
+
+            $AzureContext = Get-AzContext
+
             if(-not $Global:AadSupport.Session.Active)
             {
                 $Prompt = "Always"
-                Logout-AzAccount | Out-Null
+                Write-Host ""
+                Write-Host "Connecting to Azure AD PowerShell (Connect-AzureAD)"
+                Write-Host "and Connecting to Azure PowerShell (Connect-AzAccount)"
+                Write-Host ""
             }
             else {
                 $Prompt = "Auto"
             }
 
-                # Get Token for AAD Graph to be used for Azure AD PowerShell
-                $token = Get-AadTokenUsingAdal `
-                -ResourceId $Global:AadSupport.Resources.AadGraph `
-                -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
-                -SkipServicePrincipalSearch `
-                -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
-                -Prompt $Prompt
+            # Get Current Session Info
+            $AccountId = $Global:AadSupport.Session.AccountId
+            $TenantDomain = $Global:AadSupport.Session.TenantDomain
 
-                $AadAccessToken = $token.AccessToken
-
-                $AccountId = $token.IdTokenClaims.upn
-                $TenantId = $token.IdTokenClaims.tid
-
-                $Session = Connect-AzureAd `
-                -TenantId $TenantId `
-                -AzureEnvironmentName $AzureEnvironmentName `
-                -LogLevel $LogLevel `
-                -LogFilePath $LogPath `
-                -AadAccessToken $AadAccessToken `
-                -AccountId $AccountId
-
-                $TenantDomain = $Session.TenantDomain
-                $Global:AadSupport.Session.TenantDomain = $TenantDomain
-
-                # Get Token for Azure to be used for Azure PowerShell
-                $token = Get-AadTokenUsingAdal `
-                -ResourceId $Global:AadSupport.Resources.AzureServiceApi `
-                -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
-                -SkipServicePrincipalSearch `
-                -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
-                -UserId $AccountId `
-                -Tenant $TenantId
-
-                $AzureAccessToken = $token.AccessToken
-
-                $Global:AadSupport.Session.AccountId = $Session.Account
-                $Global:AadSupport.Session.TenantId = $Session.TenantId
-                
-                $AzureSession = Connect-AzAccount `
-                  -AccessToken $AzureAccessToken `
-                  -AccountId $Global:AadSupport.Session.AccountId `
-                  -Tenant $TenantId
-
-                $Global:AadSupport.Session.Active = $true
-
+            # Get Token for AAD Graph to be used for Azure AD PowerShell
+            $token = Get-AadTokenUsingAdal `
+            -ResourceId $Global:AadSupport.Resources.AadGraph `
+            -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
+            -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
+            -Tenant $TenantDomain `
+            -UserId $AccountId `
+            -Prompt $Prompt `
+            -SkipServicePrincipalSearch `
+            -HideOutput
             
+            $AadAccessToken = $token.AccessToken
 
+            $AccountId = $token.IdTokenClaims.upn
+            $TenantId = $token.IdTokenClaims.tid
+
+            $Session = Connect-AzureAd `
+            -TenantId $TenantId `
+            -AzureEnvironmentName $AzureEnvironmentName `
+            -LogLevel $LogLevel `
+            -LogFilePath $LogPath `
+            -AadAccessToken $AadAccessToken `
+            -AccountId $AccountId
+
+            # Determine if we need to reset Azure Context
+            $TenantDomain = $Session.TenantDomain
+            $Global:AadSupport.Session.TenantDomain = $TenantDomain
+
+            if($AzureContext `
+            -and $Azure.Context.Tenants -contains -not "$($Session.TenantId)" `
+            -and $Azure.Context.Id -ne "$($Session.Account)" )
+            {
+                Write-Verbose "Running 'Disconnect-AzAccount'"
+                Disconnect-AzAccount | Out-Null
+            }
+
+            # Get Token for Azure to be used for Azure PowerShell
+            $token = Get-AadTokenUsingAdal `
+            -ResourceId $Global:AadSupport.Resources.AzureServiceApi `
+            -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
+            -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
+            -UserId $AccountId `
+            -Tenant $TenantId `
+            -Prompt Never `
+            -SkipServicePrincipalSearch `
+            -HideOutput
+
+            $AzureRmApiAccessToken = $token.AccessToken
+
+            $Global:AadSupport.Session.AccountId = $Session.Account
+            $Global:AadSupport.Session.TenantId = $Session.TenantId
+
+            $AzureSession = Connect-AzAccount `
+            -AccessToken $AzureRmApiAccessToken `
+            -GraphAccessToken $AadAccessToken `
+            -AccountId $Global:AadSupport.Session.AccountId `
+            -Tenant $TenantId
+            
+            $Global:AadSupport.Session.Active = $true
         }
         catch {
             throw $_

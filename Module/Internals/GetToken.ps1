@@ -6,7 +6,8 @@ function GetTokenForMsGraph
     -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
     -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
     -UserId $Global:AadSupport.Session.AccountId `
-    -SkipServicePrincipalSearch
+    -SkipServicePrincipalSearch `
+    -HideOutput
 
     # Throw error if can't get Access Token
     if($result.Error) { throw $result.Error }
@@ -24,7 +25,8 @@ function GetTokenForAadGraph
     -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
     -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
     -UserId $Global:AadSupport.Session.AccountId `
-    -SkipServicePrincipalSearch
+    -SkipServicePrincipalSearch `
+    -HideOutput
 
     # Throw error if can't get Access Token
     if($result.Error) { throw $result.Error }

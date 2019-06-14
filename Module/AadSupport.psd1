@@ -12,10 +12,10 @@
 RootModule = '.\RootModuleShared.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.2.4'
+ModuleVersion = '0.2.6      '
 
 # ID used to uniquely identify this module
-GUID = '016cefd6-7f64-4f94-9c10-349737b7b3e0'
+GUID = '5e5f83b2-7760-43db-aee9-872bf7dfd327'
 
 # Author of this module
 Author = 'William Fiddes'
@@ -70,6 +70,9 @@ NestedModules = @(
     "Convert-AadThumbprintToBase64String.ps1",
     "ConvertFrom-AadBase64Certificate.ps1",
     "ConvertFrom-AadJwtToken.ps1",
+    "Import-AadAzureRoleAssignments.ps1",
+    "Export-AadAzureRoleAssignments.ps1",
+    "Get-AadApplication.ps1",
     "Get-AadDateTime.ps1",
     "Get-AadServicePrincipal.ps1",
     "Get-AadServicePrincipalAdmins.ps1",
@@ -79,7 +82,8 @@ NestedModules = @(
     "Get-AadTokenUsingAdal.ps1",
     "Get-AadTenantAdmins.ps1",
     "Invoke-AadProtectedApi.ps1",
-    "Set-AadConsent.ps1"
+    "Set-AadConsent.ps1",
+    "Update-AadSupport.ps1"
 )
 
 # Functions to export from this module
@@ -105,6 +109,9 @@ FileList = @(
     "Convert-AadThumbprintToBase64String.ps1",
     "ConvertFrom-AadBase64Certificate.ps1",
     "ConvertFrom-AadJwtToken.ps1",
+    "Import-AadAzureRoleAssignments.ps1",
+    "Export-AadAzureRoleAssignments.ps1",
+    "Get-AadApplication.ps1",
     "Get-AadDateTime.ps1",
     "Get-AadServicePrincipal.ps1",
     "Get-AadServicePrincipalAdmins.ps1",
@@ -114,7 +121,8 @@ FileList = @(
     "Get-AadTokenUsingAdal.ps1",
     "Get-AadTenantAdmins.ps1",
     "Invoke-AadProtectedApi.ps1",
-    "Set-AadConsent.ps1"
+    "Set-AadConsent.ps1",
+    "Update-AadSupport.ps1"
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess

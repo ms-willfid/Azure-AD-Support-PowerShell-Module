@@ -55,6 +55,7 @@ function Get-AadDateTime {
         $date = (Get-Date).ToUniversalTime()
     }
 
+
     if ($AddDays) {
         $date = $date.AddDays($AddDays)
     }

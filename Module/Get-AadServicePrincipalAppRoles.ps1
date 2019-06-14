@@ -25,9 +25,8 @@ function Get-AadServicePrincipalAppRoles {
         $ObjectId
     )
     
-    # REQUIRE AadSupport
-    if($global:AadSupportModule) 
-    { Connect-AadSupport }
+    # REQUIRE AadSupport Session
+    RequireConnectAadSupport
     # END REGION
 
     $TenantDomain = $Global:AadSupport.Session.TenantDomain
