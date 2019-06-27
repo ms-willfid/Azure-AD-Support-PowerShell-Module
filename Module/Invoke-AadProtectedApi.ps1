@@ -129,7 +129,14 @@ function Invoke-AadProtectedApi
 
     try{
         $JsonObject = $response.Content | ConvertFrom-Json
-        $Result.Content = $JsonObject
+        if($JsonObject.Value)
+        {
+            $Result.Content = $JsonObject.Value
+        }
+        else{
+            $Result.Content = $JsonObject
+        }
+        
     }
     catch{
         $Result.Content = $response.Content
@@ -142,12 +149,10 @@ function Invoke-AadProtectedApi
 
     if($Result.Content)
     {
-        Write-Host ""
-        Write-Host "Response from $Endpoint"
-        Write-Host ""
-        Write-ObjectToHost $Result.Content
+        Write-Verbose $response.Headers
+        Write-Verbose $response.StatusCode
     }
 
-    return $Result
+    return $Result.Content
 
 }

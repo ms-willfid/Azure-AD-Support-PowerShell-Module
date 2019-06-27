@@ -9,7 +9,7 @@ Converts a Base64Encoded Thumbprint or also known as Key Identifier (Kid) back t
 Base64Encoded version of the Thumbprint
 
 .EXAMPLE
-Convert-AadBase64StringToThumbprint -Base64String 'z79RnGljTQa9Zh4ZjLq6UaB4eUM='
+ConvertFrom-AadBase64StringToThumbprint -Base64String 'z79RnGljTQa9Zh4ZjLq6UaB4eUM='
 
 Output...
 CF-BF-51-9C-69-63-4D-06-BD-66-1E-19-8C-BA-BA-51-A0-78-79-43
@@ -17,18 +17,19 @@ CF-BF-51-9C-69-63-4D-06-BD-66-1E-19-8C-BA-BA-51-A0-78-79-43
 .NOTES
 #>
 
-Function Convert-AadBase64StringToThumbprint {
+Function ConvertFrom-AadThumbprintToBase64String {
 
     [cmdletbinding()]
 
     param(
         [parameter(Mandatory=$true)]
         [String]
-        $Base64String
+        $Thumbprint
     )
 
-    $Bytes =[Convert]::FromBase64String($Base64String)
-    $Thumbprint = [BitConverter]::ToString($Bytes);
+    $Bytes = Convert-ThumbprintToByteArray -Thumbprint ($Thumbprint.Replace("-",""))
 
-    return $Thumbprint
+    $hashedString =[Convert]::ToBase64String($Bytes)
+
+    return $hashedString
 }

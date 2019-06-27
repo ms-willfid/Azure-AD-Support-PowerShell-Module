@@ -10,13 +10,13 @@ For example convert '1557162946' to '2019-05-06T22:15:46.0000000Z'
 This is the JWT number format (i.e. 1557162946)
 
 .EXAMPLE
-Convert-AadJwtTime 1557162946
+ConvertFrom-AadJwtTime 1557162946
 
 .NOTES
 General notes
 #>
 
-function Convert-AadJwtTime {
+function ConvertFrom-AadJwtTime {
     Param (
         [Parameter(ValueFromPipeline = $true,Mandatory=$true)]
         [string]

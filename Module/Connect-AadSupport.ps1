@@ -5,11 +5,33 @@ Connect to the Azure AD Support PowerShell module. This will use the same sign-i
 .DESCRIPTION
 Connect to the Azure AD Support PowerShell module. This will use the same sign-in session to access different Microsoft resources.
 
+Example 1: Log in with your admin account...
+Connect-AadSupport
+
+Example 2: Log in with a new session...
+Connect-AadSupport -NewSession
+
+Example 3: Log in to a specific tenant...
+Connect-AadSupport -TenantId contoso.onmicrosoft.com
+
+Example 4: Log in to a specific instance...
+Connect-AadSupport -AzureEnvironmentName AzureCloud
+Connect-AadSupport -AzureEnvironmentName AzureGermanyCloud
+Connect-AadSupport -AzureEnvironmentName AzureChinaCloud
+Connect-AadSupport -AzureEnvironmentName AzureUSGovernment
+
 .PARAMETER TenantId
 Provide the Tenant ID you want to authenticate to.
 
 .PARAMETER AzureEnvironmentName
-Provide the Azure AD Instance you want to connect to.
+Specifies the name of the Azure environment. The acceptable values for this parameter are:
+
+        - AzureCloud
+        - AzureChinaCloud
+        - AzureUSGovernment
+        - AzureGermanyCloud
+
+        The default value is AzureCloud.
 
 .PARAMETER LogLevel
 Specifies the log level. The accdeptable values for this parameter are:
@@ -26,9 +48,6 @@ deviate from the default PowerShell log file location.
 .PARAMETER NewSession
 By default, when calling Connect-AadSupport will use a cached access token. To sign-in again, Use this switch.
 
-.EXAMPLE
-Example 1: Log in with your admin account...
-Connect-AadSupport
 
 .NOTES
 General notes
@@ -39,7 +58,10 @@ function Connect-AadSupport
     [CmdletBinding()]
     param (
         $TenantId = "Common",
+
+        [ValidateSet("AzureCloud","AzureGermanyCloud","AzureUSGovernment","AzureChinaCloud")]
         $AzureEnvironmentName = "AzureCloud",
+
         $LogLevel = "Info",
         $LogPath = "C:\AadExtensionLogs",
 
@@ -92,10 +114,7 @@ function Connect-AadSupport
 
     if($NewSession)
     {
-        $Global:AadSupport.Session.Active = $false
-        $Global:AadSupport.Session.TenantDomain = $null
-        $Global:AadSupport.Session.TenantId = $null
-        $Global:AadSupport.Session.AccountId = $null
+        New-AadSupportSession
     }
 
     # Connect to Azure AD PowerShell
@@ -122,14 +141,14 @@ function Connect-AadSupport
 
             # Get Token for AAD Graph to be used for Azure AD PowerShell
             $token = Get-AadTokenUsingAdal `
-            -ResourceId $Global:AadSupport.Resources.AadGraph `
-            -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
-            -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
-            -Tenant $TenantDomain `
-            -UserId $AccountId `
-            -Prompt $Prompt `
-            -SkipServicePrincipalSearch `
-            -HideOutput
+              -ResourceId $Global:AadSupport.Resources.AadGraph `
+              -ClientId $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
+              -Redirect $Global:AadSupport.Clients.AzureAdPowershell.RedirectUri `
+              -Tenant $TenantDomain `
+              -UserId $AccountId `
+              -Prompt $Prompt `
+              -SkipServicePrincipalSearch `
+              -HideOutput
             
             $AadAccessToken = $token.AccessToken
 
@@ -158,7 +177,7 @@ function Connect-AadSupport
 
             # Get Token for Azure to be used for Azure PowerShell
             $token = Get-AadTokenUsingAdal `
-            -ResourceId $Global:AadSupport.Resources.AzureServiceApi `
+            -ResourceId $Global:AadSupport.Resources.AzureRmApi `
             -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
             -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
             -UserId $AccountId `

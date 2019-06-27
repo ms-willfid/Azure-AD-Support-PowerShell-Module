@@ -17,11 +17,13 @@ if ($local_module -and $remote_module.Version -ne $local_module.Version.toString
     Write-Host "Run the following command... 'Update-AadSupport'"
 }
 
-# Check if Azure AD PowerShell is installed
+# Check if required PowerShell modules are installed
 $module = Get-Module -ListAvailable -Name AzureAd
 $modulep = Get-Module -ListAvailable -Name AzureAdPreview
 $AzureModule = Get-Module -ListAvailable -Name Az.Accounts
+$MsolModule = Get-Module -ListAvailable -Name MsOnline
 
+# Check AzureAdPreview
 if ($modulep)
 {
     $ModuleName = "AzureADPreview"
@@ -33,6 +35,7 @@ if ($modulep)
     }
 }
 
+# Check AzureAd
 if ($module)
 {
     $ModuleName = "AzureAD"
@@ -60,6 +63,7 @@ elseif (-not $module -and -not $modulep) {
 }
 
 
+# Check Azure PowerShell is updated
 if ($AzureModule)
 {
     if($AzureModule.Version.ToString() -lt "2.2.0")
@@ -85,22 +89,44 @@ elseif(-not $AzureModule) {
     }
 }
 
+# Check MSOnline PowerShell is updated
+if ($MsolModule)
+{
+    if($MsolModule.Version.ToString() -lt "1.1.166.0")
+    {
+        Write-Host ""
+        Write-Host "Please update your MSOnline PowerShell Module..." -ForegroundColor Yellow
+        Write-Host "Run... 'Install-Module MSOnline -Force -AllowClobber'" -ForegroundColor Yellow
+    }
+}
+
+# Check if MSOnline PowerShell is installed
+elseif(-not $MsolModule) {
+    Write-Host ""
+    Write-Host "MSOnline PowerShell module not installed!" -ForegroundColor Yellow
+    Write-Host "Attempting to install MSOnline PowerShell module..." -ForegroundColor Yellow
+    try {
+        Install-Module Az -Force -AllowClobber
+        Write-Host "Finished installing MSOnline Module"
+    }
+
+    catch {
+        throw "Unable to install MSOnline PowerShell module. Please run PowerShell as a Administrator."
+    }
+}
+
+# LOAD ADAL ASSEMBLY
+
 #Get the module folder so we can load the ADAL DLLs we want
 $modulebase = (Get-Module $ModuleName -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).ModuleBase
-$adalpath = "{0}\Microsoft.IdentityModel.Clients.ActiveDirectory.dll" -f $modulebase
-$adalVersion = ([System.Diagnostics.FileVersionInfo]::GetVersionInfo("$adalpath").FileVersion)
-Write-Verbose "ADAL Module Path: $adalpath"
+$Global:AadSupportAdalPath = "{0}\Microsoft.IdentityModel.Clients.ActiveDirectory.dll" -f $modulebase
+$adalVersion = ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($Global:AadSupportAdalPath).FileVersion)
+Write-Verbose "ADAL Module Path: $($Global:AadSupportAdalPath)"
 Write-Verbose "ADAL Version: $adalVersion" 
 #Attempt to load the assemblies. Without these we cannot continue so we need the user to stop and take an action
-Try
-{
-    $AdalAssembly = [System.Reflection.Assembly]::LoadFrom($adalpath)
-}
-Catch
-{
-    Write-Warning "Unable to load ADAL assemblies.`nUpdate the AzureAd module by running Install-Module AzureAd -Force -AllowClobber"
-}
-        
+       
+
+Load-AadSupportAdalAssembly
 
 $Global:AadSupportModule = $true
 

@@ -44,6 +44,39 @@ Enable this switch if you want to use the Client Credential grant flow.
 .PARAMETER UseRefreshToken
 Enable this switch if you want to use the Refresh Token grant flow.
 
+.PARAMETER GrantType
+Specify the 'grant_type' you want to use.
+ - password
+ - client_credentials
+ - refresh_token
+ - authorization_code
+ - urn:ietf:params:oauth:grant-type:jwt-bearer
+ - urn:ietf:params:oauth:grant-type:saml1_1-bearer
+ - urn:ietf:params:oauth:grant-type:saml2-bearer
+
+.PARAMETER Code
+Specify the 'code' for authorization code flow
+
+.PARAMETER Assertion
+Specify the 'assertion' you want to use for user assertion
+
+.PARAMETER ClientAssertionType
+Specify the 'client_assertion_type' you want to use.
+
+Available options...
+ - urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+
+.PARAMETER ClientAssertion
+Specify the 'client_assertion' you want to use. This is used for Certificate authentication where the client assertion is signed by a private key.
+
+.PARAMETER RequestedTokenUse
+Specify the 'requested_token_use' you want to use. For Azure AD, the only acceptable value is 'on_behalf_of'. This is used to identify the on-behalf-of flow is to be used.
+
+.PARAMETER RequestedTokenType
+Specify the 'requested_token_type'. This is either... 
+ - urn:ietf:params:oauth:token-type:saml2
+ - urn:ietf:params:oauth:token-type:saml1
+
 .EXAMPLE
 Use Resource Owner Password Credential grant flow
 Get-AadToken -UseResourceOwner -ResourceId "https://graph.microsoft.com" -ClientId 5567ba8a-e608-4219-97d8-3d3ea63718e7 -Redirect "https://login.microsoftonline.com/common/oauth2/nativeclient" -Username john@contoso.com -Password P@$$w0rd!
@@ -60,47 +93,51 @@ function Get-AadToken
     [CmdletBinding(DefaultParameterSetName="All")] 
     param(
         [Parameter(Mandatory=$true, Position=0)]
-        $ClientId,
+        [string]$ClientId,
 
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$false)]
-        [switch]
-        $UseResourceOwner,
+        [switch]$UseResourceOwner,
 
         [Parameter(ParameterSetName="UseClientCredential", Mandatory=$false)]
-        [switch]
-        $UseClientCredential,
+        [switch]$UseClientCredential,
 
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$false)]
-        [switch]
-        $UseRefreshToken,   
+        [switch]$UseRefreshToken,   
 
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$true)]
-        $Username = $null,
+        [string]$Username = $null,
 
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$true)]
         [string]$Password = $null,
 
-        [Parameter(ParameterSetName="UseClientCredential", Mandatory=$true)]
-        [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$false)]
-        [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$false)]
-        $ClientSecret = $null,
+
+        [string]$ClientSecret = $null,
 
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$true)]
-        $RefreshToken,
+        [string]$RefreshToken,
 
-        $ResourceId = "https://graph.microsoft.com",
+        [string]$ResourceId = "https://graph.microsoft.com",
         
         [Parameter(ParameterSetName="UseClientCredential", Mandatory=$true)]
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$false)]
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$false)]
-        $Tenant,
+        [string]$Tenant,
 
-        $Scopes = "openid email profile offline_access https://graph.microsoft.com/.default",
-        $Redirect = $null,
-        $Instance = "https://login.microsoftonline.com",
+        [string]$Scopes = "openid email profile offline_access https://graph.microsoft.com/.default",
+        [string]$Redirect = $null,
+        [string]$Instance = "https://login.microsoftonline.com",
+        
+        [switch]$UseV2 = $false,
 
-        [switch]
-        $UseV2 = $false
+        [string]$GrantType,
+        [string]$Code,
+        [string]$Assertion,
+        [string]$ClientAssertionType,
+        [string]$ClientAssertion,
+        [string]$RequestedTokenUse,
+
+        [ValidateSet("urn:ietf:params:oauth:token-type:saml2", "urn:ietf:params:oauth:token-type:saml1")]
+        [string]$RequestedTokenType
     )
 
     # REQUIRE AadSupport Session
@@ -129,7 +166,7 @@ function Get-AadToken
     
 
     # Set Grant_Type
-    if (-not $UseResourceOwner -and -not $UseClientCredential -and -not $UseRefreshToken)
+    if (-not $UseResourceOwner -and -not $UseClientCredential -and -not $UseRefreshToken -and -not $GrantType)
     {
         do {
             $isValidChoice = $true
@@ -260,6 +297,11 @@ function Get-AadToken
         $body.refresh_token = $RefreshToken
     }
 
+    if($Code)
+    {
+        $body.code = $Code
+    }
+
     if ($ClientSecret) {
         $body.client_secret = $ClientSecret
     }
@@ -269,6 +311,31 @@ function Get-AadToken
         $body.username   = $Username
         $body.password   = $Password
         $body.grant_type = "password"
+    }
+
+    if($ClientAssertionType)
+    {
+        $body.client_assertion_type = $ClientAssertionType
+    }
+
+    if($ClientAssertion)
+    {
+        $body.client_assertion = $ClientAssertion
+    }
+
+    if($Assertion)
+    {
+        $body.assertion = $Assertion
+    }
+
+    if($RequestedTokenUse)
+    {
+        $body.requested_token_use = $RequestedTokenUse
+    }
+
+    if($RequestedTokenType)
+    {
+        $body.requested_token_type = $RequestedTokenType
     }
 
     $token.PostContent = $body
@@ -302,9 +369,16 @@ function Get-AadToken
 
         if($token.AccessToken)
         {
-            $Headers = @{ "Authorization" = "Bearer $AccessToken" }
-            $token.Headers = $Headers
-            $token.AccessTokenClaims = $token.AccessToken | ConvertFrom-AadJwtToken
+            if($token.AccessToken.StartsWith("eyJ"))
+            {
+                $token.AccessTokenClaims = $token.AccessToken | ConvertFrom-AadJwtToken
+            }
+
+            else 
+            {
+                $token.SamlDecoded = ConvertFrom-Base64String -base64String ( Base64UrlDecode($token.AccessToken) )
+            }
+            
         }
 
         if($token.IdToken)
@@ -320,6 +394,7 @@ function Get-AadToken
         $scriptError = $scriptError | ConvertFrom-Json
 
         $token.Error = $scriptError
+        $scriptError | Out-Host
 
         # AADSTS65001
         if ($scriptError -match "AADSTS65001") {
@@ -348,23 +423,12 @@ function Get-AadToken
 
     $Object = New-Object PSObject -Property $token
 
-    <#
-    if($Object.AccessToken)
-    {
-        Write-Host ""
-        Write-Host "Access Token" -ForegroundColor Yellow
-        $AccessToken = $Object.AccessToken
-        Write-Host $AccessToken
-    }
-    #>
-
-    if($Object.AccessToken -and -not $HideOutput)
+    if($Object.AccessTokenClaims -and -not $HideOutput)
     {
         
         Write-Host ""
         Write-Host "Access Token" -ForegroundColor Yellow
-        $AccessTokenClaims = $Object.AccessTokenClaims
-        Write-ObjectToHost $AccessTokenClaims
+        Write-ObjectToHost $($Object.AccessTokenClaims)
     }
     
     

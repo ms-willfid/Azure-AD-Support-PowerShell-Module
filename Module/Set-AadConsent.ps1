@@ -82,11 +82,6 @@ function Set-AadConsent {
     Read-Host -Prompt "Press any key to continue or CTRL+C to quit" 
     Write-Host ""
 
-    # REQUIRE AadSupport
-    if($global:AadSupportModule) 
-    { Connect-AadSupport }
-    # END REGION
-
     $TenantDomain = $Global:AadSupport.Session.TenantDomain
 
     # --------------------------------------------------

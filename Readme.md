@@ -21,7 +21,30 @@ To install the Azure AD Support PowerShell Module...
 > Install-Module AadSupport
 
 ## Version History
-0.2.6
+###0.2.7
+* Get-AadServicePrincipalAccess Now does transitive group membership lookup
+* Added user version of Get-AadServicePrincipalAcces called Get-AadUserAccess
+* Added or rather exposed my internal calls for Get-AadServicePrincipalAccess (Re-worked them to support Get-AadUserAccess and allow output to file)
+    * Get-AadKeyVaultAccessByObject
+    * Get-AadConsentedPermissions
+    * Get-AadAzureRoleAssignments
+    * Get-AadAppRolesByObject
+    * Get-AadAdminRolesByObject
+* Added Get-AadDiscoveryKeys (Gets the public certs used to verify signatures)
+* Added Get-AadUserRealm (Calls GetUserRealm)
+* Removed Alies(es). It was causing confusion for testers
+* Added additional parameters to Get-AadToken to allow flexible token request...
+    * GrantType
+    * Code
+    * Assertion
+    * ClientAssertionType
+    * ClientAssertion
+    * RequestedTokenUse
+    * RequestedTokenType
+* Added Get-AadObjectCount (How many objects in Azure AD that counts against Directory Quota)
+* And as usual squashing some bugs
+
+###0.2.6
 * Now forcing user to call Connect-AadSupport
 * Added Delete HttpMethod for Invoke-AadProtectedApi
 * Added Get-AadApplication (Alias Get-AadApp)

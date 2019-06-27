@@ -12,7 +12,7 @@
 RootModule = '.\RootModuleShared.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.2.6      '
+ModuleVersion = '0.2.7'
 
 # ID used to uniquely identify this module
 GUID = '5e5f83b2-7760-43db-aee9-872bf7dfd327'
@@ -65,22 +65,30 @@ ScriptsToProcess = @("startup.ps1")
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
     "Connect-AadSupport.ps1",
-    "Convert-AadJwtTime.ps1",
-    "Convert-AadBase64StringToThumbprint.ps1",
-    "Convert-AadThumbprintToBase64String.ps1",
+    "ConvertFrom-AadJwtTime.ps1",
+    "ConvertFrom-AadBase64StringToThumbprint.ps1",
+    "ConvertFrom-AadThumbprintToBase64String.ps1",
     "ConvertFrom-AadBase64Certificate.ps1",
     "ConvertFrom-AadJwtToken.ps1",
     "Import-AadAzureRoleAssignments.ps1",
     "Export-AadAzureRoleAssignments.ps1",
+    "Get-AadAdminRolesByObject.ps1",
     "Get-AadApplication.ps1",
+    "Get-AadAzureRoleAssignments.ps1",
     "Get-AadDateTime.ps1",
+    "Get-AadDiscoveryKeys.ps1",
+    "Get-AadConsentedPermissions.ps1",
+    "Get-AadKeyVaultAccessByObject.ps1",
     "Get-AadServicePrincipal.ps1",
     "Get-AadServicePrincipalAdmins.ps1",
     "Get-AadServicePrincipalAccess.ps1",
-    "Get-AadServicePrincipalAppRoles.ps1",
+    "Get-AadAppRolesByObject.ps1",
     "Get-AadToken.ps1",
     "Get-AadTokenUsingAdal.ps1",
     "Get-AadTenantAdmins.ps1",
+    "Get-AadObjectCount.ps1",
+    "Get-AadUserAccess.ps1",
+    "Get-AadUserRealm.ps1",
     "Invoke-AadProtectedApi.ps1",
     "Set-AadConsent.ps1",
     "Update-AadSupport.ps1"
@@ -104,22 +112,30 @@ AliasesToExport = '*-Aad*'
 # List of all files packaged with this module
 FileList = @(
     "Connect-AadSupport.ps1",
-    "Convert-AadJwtTime.ps1",
-    "Convert-AadBase64StringToThumbprint.ps1",
-    "Convert-AadThumbprintToBase64String.ps1",
+    "ConvertFrom-AadJwtTime.ps1",
+    "ConvertFrom-AadBase64StringToThumbprint.ps1",
+    "ConvertFrom-AadThumbprintToBase64String.ps1",
     "ConvertFrom-AadBase64Certificate.ps1",
     "ConvertFrom-AadJwtToken.ps1",
     "Import-AadAzureRoleAssignments.ps1",
     "Export-AadAzureRoleAssignments.ps1",
+    "Get-AadAdminRolesByObject.ps1",
     "Get-AadApplication.ps1",
+    "Get-AadAzureRoleAssignments.ps1",
     "Get-AadDateTime.ps1",
+    "Get-AadDiscoveryKeys.ps1",
+    "Get-AadConsentedPermissions.ps1",
+    "Get-AadKeyVaultAccessByObject.ps1",
     "Get-AadServicePrincipal.ps1",
     "Get-AadServicePrincipalAdmins.ps1",
     "Get-AadServicePrincipalAccess.ps1",
-    "Get-AadServicePrincipalAppRoles.ps1",
+    "Get-AadAppRolesByObject.ps1",
     "Get-AadToken.ps1",
     "Get-AadTokenUsingAdal.ps1",
     "Get-AadTenantAdmins.ps1",
+    "Get-AadObjectCount.ps1",
+    "Get-AadUserAccess.ps1",
+    "Get-AadUserRealm.ps1",
     "Invoke-AadProtectedApi.ps1",
     "Set-AadConsent.ps1",
     "Update-AadSupport.ps1"

@@ -22,14 +22,14 @@ function ConvertFrom-AadBase64Certificate
     [cmdletbinding()]
 
     param(
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true)]
         [String]
         $Base64String
     )
 
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($Base64String)
     $cert = new-object System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList @(,$bytes)
-    $kid = Convert-AadThumbprintToBase64String -Thumbprint $cert.Thumbprint
+    $kid = ConvertFrom-AadThumbprintToBase64String -Thumbprint $cert.Thumbprint
     
     $Properties = @{ 
         Kid = $kid; 

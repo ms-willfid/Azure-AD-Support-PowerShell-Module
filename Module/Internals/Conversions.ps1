@@ -37,3 +37,31 @@ Function Convert-ByteArrayToThumbprint {
 
     return $Thumbprint.ToString()
 }
+
+
+function Base64UrlEncode($Value)
+{
+    return $Value.Replace("=", [String]::Empty).Replace('+', '-').Replace('/', '_')
+}
+
+function Base64UrlDecode($Value)
+{
+    while($Value.Length % 4 -ne 0)
+    {
+        $Value += "="
+    }
+
+    return $Value.Replace('-', '+').Replace('_', '/')
+}
+
+
+function ConvertFrom-Base64String
+{
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [string]$base64string
+    )
+
+    return [System.Text.Encoding]::UTF8.GetString(([System.Convert]::FromBase64String($base64string)))
+}

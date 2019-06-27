@@ -85,7 +85,13 @@ function Get-AadServicePrincipal
     # Search By ServicePrincipalName
     if ($ServicePrincipalName) {
         Write-Verbose "Looking for '$ServicePrincipalName'"
-        $sp = GetAadSpByServicePrincipalName $ServicePrincipalName
+        $sp = GetAadSpByServicePrincipalName -Id $ServicePrincipalName
+    }
+
+    # Search By DisplayName
+    if ($DisplayName) {
+        Write-Verbose "Looking for '$DisplayName'"
+        $sp = GetAadSpByDisplayName -Id $DisplayName
     }
 
     try {
@@ -138,7 +144,7 @@ function Get-AadServicePrincipal
 
     # Exit script! Service Principal Not found
     if (-not $sp) {
-        throw "Azure AD Service Principal '$Id' not found!"
+        throw "Azure AD Service Principal not found!"
     }
 
     # Service Principal(s) Found > Only return One result

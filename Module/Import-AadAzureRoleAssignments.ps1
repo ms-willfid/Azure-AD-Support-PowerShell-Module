@@ -96,7 +96,7 @@ function Import-AadAzureRoleAssignments {
           # Group Role Assignment
           elseif ($role.ObjectType -eq "Group") {
 
-            $group = Get-AzureAdGroup -SearchString $role.DisplayName
+            $group = Get-AzureAdGroup -Filter "DisplayName eq '$($role.DisplayName)'"
 
             if ($group.count -eq 1) {
               $GroupId = $group.id

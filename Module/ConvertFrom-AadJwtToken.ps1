@@ -58,7 +58,7 @@ function ConvertFrom-AadJwtToken {
     { 
         if($claim.Name -eq "iat" -or $claim.Name -eq "exp" -or $claim.Name -eq "nbf") 
         {
-            $jwtClaims.Add($claim.Name, ($claim.Value | Convert-AadJwtTime) )
+            $jwtClaims.Add($claim.Name, ($claim.Value | ConvertFrom-AadJwtTime) )
         }
 
         else 

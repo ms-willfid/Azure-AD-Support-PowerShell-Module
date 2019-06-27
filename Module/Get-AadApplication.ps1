@@ -69,17 +69,26 @@ function Get-AadApplication
 
     # Search By AppId
     if ($AppId) {
+        Write-Verbose "Looking for '$AppId'"
         $app = GetAadAppByAppId $AppId
     }
 
     # Search By ReplyAddress
     if ($ReplyAddress) {
+        Write-Verbose "Looking for '$ReplyAddress'"
         $app = GetAadAppByReplyAddress $ReplyAddress
     }
 
     # Search By AppUriId
     if ($AppUriId) {
+        Write-Verbose "Looking for '$AppUriId'"
         $app = GetAadAppByAppUriId $AppUriId
+    }
+
+    # Search By DisplayName
+    if ($DisplayName) {
+        Write-Verbose "Looking for '$DisplayName'"
+        $sp = GetAadAppyDisplayName -Id $DisplayName
     }
 
     try {
