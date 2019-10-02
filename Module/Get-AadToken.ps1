@@ -148,18 +148,25 @@ function Get-AadToken
     $scriptError = $null
 
     # Get Service Principal
-    $sp = Get-AadServicePrincipal -Id $ClientId
+    try {
+        $sp = Get-AadServicePrincipal -Id $ClientId
+
+        # Get real Client ID
+        $ClientId = $sp.AppId
+    }
+    catch {
+        Write-Host "App '$ClientId' not found" -ForegroundColor Yellow
+    }
+
 
     if($sp.count -gt 1)
     {
         throw "Found too many results for '$ClientId'. Please specify a unique ClientId."
     }
 
-    # Get real Client ID
-    $ClientId = $sp.AppId
 
     # Get Redirect Uri if not one specified
-    if(-not $Redirect) 
+    if(-not $Redirect -and $sp) 
     {
         $Redirect = $sp.ReplyUrls[0]
     }
@@ -266,6 +273,17 @@ function Get-AadToken
 
     # Start initializing the token endpoint POST content
     $body            = @{}
+
+
+    # Lookup Resource
+    try {
+        $resource = Get-AadServicePrincipal -Id $ResourceId
+        $ResourceId - $resource.AppId
+    }
+    catch {
+        Write-Host "Resource '$ResourceId' not found" -ForegroundColor Yellow
+    }
+
 
     # Set up if AAD V1 or V2 authentication is used...
     if ($UseV2) {

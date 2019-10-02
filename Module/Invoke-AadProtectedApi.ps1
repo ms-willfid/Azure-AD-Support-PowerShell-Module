@@ -66,9 +66,13 @@ function Invoke-AadProtectedApi
        $ContentType = "application/json"
     ) #end param
 
-    # REQUIRE AadSupport Session
-    RequireConnectAadSupport
-    # END REGION
+    if(-not $Bearer)
+    {
+        # REQUIRE AadSupport Session
+        RequireConnectAadSupport
+        # END REGION
+    }
+    
 
     # Parameter requirements
     if ( ($Method -eq "POST" -or $Method -eq "PATCH" -or $Method -eq "PUT") -and -not $Body )
@@ -95,7 +99,8 @@ function Invoke-AadProtectedApi
 
     if($Client -and $Resource)
     {
-        $token = Get-AadTokenUsingAdal -ClientId $Client -ResourceId $Resource -UserId $Global:AadSupport.Session.AccountId -Prompt Auto -HideOutput
+        write-verbose "Getting token for $Client and $Resource"
+        $token = Get-AadTokenUsingAdal -ClientId $Client -ResourceId $Resource -UserId $Global:AadSupport.Session.AccountId -Prompt Auto -HideOutput -SkipServicePrincipalSearch
         if($token["Error"]) 
         {
             return $token["Error"]
@@ -104,53 +109,94 @@ function Invoke-AadProtectedApi
         $bearer = $token.AccessToken
     }
 
-    try {
-        if ($Method -eq "GET")
-        {
-            $response = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method GET -ContentType $ContentType
-        }
-
-        if ($Method -eq "POST" -or $Method -eq "PATCH" -or $Method -eq "PUT")
-        {   
-            $response = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method $Method -Body $Body -ContentType $ContentType
-        }
-
-        if ($Method -eq "DELETE")
-        {
-            $response = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method $Method -ContentType $ContentType
-        }
-
-    }
-    catch{
-        throw $_
-    }
-
     $Result = [ordered]@{}
+    $Result.Content = @()
+    $nextLink = $null
 
-    try{
-        $JsonObject = $response.Content | ConvertFrom-Json
-        if($JsonObject.Value)
-        {
-            $Result.Content = $JsonObject.Value
-        }
-        else{
-            $Result.Content = $JsonObject
-        }
+    do {
+        Start-Sleep -Milliseconds 100
         
-    }
-    catch{
-        $Result.Content = $response.Content
-    }
+        if($nextLink)
+        {
+            $endpoint = $nextLink
+            $nextLink = $null
+        }
+
+        try {
+            write-verbose "Making Graph call..."
+            if ($Method -eq "GET")
+            {
+                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method GET -ContentType $ContentType -verbose
+            }
+
+            if ($Method -eq "POST" -or $Method -eq "PATCH" -or $Method -eq "PUT")
+            {   
+                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method $Method -Body $Body -ContentType $ContentType -verbose
+            }
+
+            if ($Method -eq "DELETE")
+            {
+                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method $Method -ContentType $ContentType -verbose
+            }
+
+        }
+        catch{
+            Write-Host "Exception calling API." -ForegroundColor Red
+            if($request.Response.Content)
+            {
+                $request.Response.Content
+            }
+
+            elseif($_.Exception.Response) {
+                $reqstream = $_.Exception.Response.GetResponseStream()
+                $stream = new-object System.IO.StreamReader $reqstream
+                $string = $stream.ReadToEnd()
+                Write-Host $string
+            }
+            
+            throw $_
+        }
+    
+        try{
+            $JsonObject = $request.Content | ConvertFrom-Json
+            if($JsonObject.Value)
+            {
+                $Result.Content += $JsonObject.Value
+                if($JsonObject.'@odata.nextLink')
+                {
+                    $nextLink = $JsonObject.'@odata.nextLink'
+                }
+                if($JsonObject.'odata.nextLink')
+                {
+                    if(-not $nextLink -match "https")
+                    {
+                        $nextLink = $JsonObject.'odata.nextLink'
+                        Write-Host "nextLink is not a valid web address."
+                        Write-Host $nextLink
+                    }
+                }
+                
+            }
+            else{
+                $Result.Content += $JsonObject
+            }
+            
+        }
+        catch{
+            $Result.Content = $request.Content
+        }
+    } while ($nextLink)
 
     
-    $Result.Headers = $response.Headers
-    $Result.StatusCode = $response.StatusCode
-    $Result.Response = $response
+    $Result.Headers = $request.Headers
+    $Result.StatusCode = $request.StatusCode
+    $Result.Response = $request
 
     if($Result.Content)
     {
-        Write-Verbose $response.Headers
-        Write-Verbose $response.StatusCode
+        Write-Verbose $request.Headers
+        Write-Verbose $request.StatusCode
+        Write-Verbose $Result.Response
     }
 
     return $Result.Content

@@ -20,8 +20,23 @@ To install the Azure AD Support PowerShell Module...
 
 > Install-Module AadSupport
 
+
+## Connect
+
+To Sign in with your user and start using the cmdlets available for this module...
+
+> Connect-AadSupport
+
+
 ## Version History
-###0.2.7
+
+### 0.2.8 | Oct-2 2019
+* Added Get-AadReportCredentialsExpiringSoon : Lists all Apps and service principals where Key Credentials and Password credentials are about to expire
+* Added Get-AadReportUserMfaEnrollment : Lists Users who have enrolled for MFA
+* When using Invoke-AadProtectedApi for MS Graph, added pagination so all results will be returned.
+* Fixed bug with Get-AadObjectCount
+
+### 0.2.7
 * Get-AadServicePrincipalAccess Now does transitive group membership lookup
 * Added user version of Get-AadServicePrincipalAcces called Get-AadUserAccess
 * Added or rather exposed my internal calls for Get-AadServicePrincipalAccess (Re-worked them to support Get-AadUserAccess and allow output to file)
@@ -44,7 +59,7 @@ To install the Azure AD Support PowerShell Module...
 * Added Get-AadObjectCount (How many objects in Azure AD that counts against Directory Quota)
 * And as usual squashing some bugs
 
-###0.2.6
+### 0.2.6
 * Now forcing user to call Connect-AadSupport
 * Added Delete HttpMethod for Invoke-AadProtectedApi
 * Added Get-AadApplication (Alias Get-AadApp)

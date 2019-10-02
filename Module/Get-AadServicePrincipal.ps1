@@ -1,7 +1,3 @@
-
-
-Set-Alias -Name Get-AadSp -Value Get-AadServicePrincipal
-
 <#
 .SYNOPSIS
 Intelligence to return the service principal object by looking up using any of its identifiers.

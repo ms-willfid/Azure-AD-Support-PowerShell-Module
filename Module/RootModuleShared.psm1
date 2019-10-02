@@ -12,6 +12,17 @@ function New-AadSupportSession
             Active = $false
         }
 
+        Runspace = @{
+            AzureAd = @{
+                Instance = [runspacefactory]::CreateRunspace()
+                Connected = $false
+            }
+            MSOnline = @{
+                Instance = [runspacefactory]::CreateRunspace()
+                Connected = $false
+            }
+        }
+
         Common = @{
             AadInstance = "https://login.microsoftonline.com"
             TenantId = "common"
@@ -36,14 +47,16 @@ function New-AadSupportSession
             KeyVault = "https://vault.azure.net"
         }
 
-        CacheObject1 = $null
-        CacheObject2 = $null
-
+        CacheObject = @()
         AdalContext = @{}
     }
+
 }
 
+# Call the function above to Create a new or reset the AadSupportSession
 New-AadSupportSession
+
+
 
 Export-ModuleMember -Function Connect-AadSupport
 Export-ModuleMember -Function ConvertFrom-AadJwtToken
@@ -51,22 +64,25 @@ Export-ModuleMember -Function ConvertFrom-AadJwtTime
 Export-ModuleMember -Function ConvertFrom-AadThumbprintToBase64String
 Export-ModuleMember -Function ConvertFrom-AadBase64StringToThumbprint
 Export-ModuleMember -Function ConvertFrom-AadBase64Certificate
-Export-ModuleMember -Function Get-AadTokenUsingAdal
-Export-ModuleMember -Function Get-AadToken
 Export-ModuleMember -Function Get-AadAdminRolesByObject
 Export-ModuleMember -Function Get-AadApplication
+Export-ModuleMember -Function Get-AadAppRolesByObject
 Export-ModuleMember -Function Get-AadAzureRoleAssignments
 Export-ModuleMember -Function Get-AadConsentedPermissions
+Export-ModuleMember -Function Get-AadDateTime
 Export-ModuleMember -Function Get-AadDiscoveryKeys
 Export-ModuleMember -Function Get-AadKeyVaultAccessByObject
+Export-ModuleMember -Function Get-AadObjectCount
+Export-ModuleMember -Function Get-AadReportCredentialsExpiringSoon
+Export-ModuleMember -Function Get-AadReportUserMfaEnrollment
 Export-ModuleMember -Function Get-AadServicePrincipal
 Export-ModuleMember -Function Get-AadServicePrincipalAdmins
 Export-ModuleMember -Function Get-AadServicePrincipalAccess
-Export-ModuleMember -Function Get-AadAppRolesByObject
-Export-ModuleMember -Function Get-AadDateTime
 Export-ModuleMember -Function Get-AadTenantAdmins
-Export-ModuleMember -Function Get-AadObjectCount
+Export-ModuleMember -Function Get-AadTokenUsingAdal
+Export-ModuleMember -Function Get-AadToken
 Export-ModuleMember -Function Get-AadUserAccess
+#Export-ModuleMember -Function Get-AadUserInfo
 Export-ModuleMember -Function Get-AadUserRealm
 Export-ModuleMember -Function Invoke-AadProtectedApi
 Export-ModuleMember -Function Set-AadConsent

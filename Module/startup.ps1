@@ -123,9 +123,8 @@ $Global:AadSupportAdalPath = "{0}\Microsoft.IdentityModel.Clients.ActiveDirector
 $adalVersion = ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($Global:AadSupportAdalPath).FileVersion)
 Write-Verbose "ADAL Module Path: $($Global:AadSupportAdalPath)"
 Write-Verbose "ADAL Version: $adalVersion" 
-#Attempt to load the assemblies. Without these we cannot continue so we need the user to stop and take an action
-       
 
+#Attempt to load the assemblies. Without these we cannot continue so we need the user to stop and take an action
 Load-AadSupportAdalAssembly
 
 $Global:AadSupportModule = $true

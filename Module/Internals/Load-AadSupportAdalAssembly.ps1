@@ -6,7 +6,7 @@ function Load-AadSupportAdalAssembly
 
     Try
     {
-        $AdalAssembly = [System.Reflection.Assembly]::LoadFrom($AdalPath)
+        $Global:AadSupportAdalAssembly = [System.Reflection.Assembly]::LoadFrom($AdalPath)
     }
     Catch
     {

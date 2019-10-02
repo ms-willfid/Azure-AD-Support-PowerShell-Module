@@ -118,6 +118,8 @@ function Get-AadTokenUsingAdal
         $HideOutput
     )
 
+    Load-AadSupportAdalAssembly
+
     #Ensure Parameters are valid
     if(-not $Tenant)
     {
@@ -134,12 +136,26 @@ function Get-AadTokenUsingAdal
     # Get Service Principal
     if(-not $SkipServicePrincipalSearch)
     {
-        $sp = Get-AadServicePrincipal -Id $ClientId
-        $ClientId = $sp.AppId
+        try{
+            $sp = Get-AadServicePrincipal -Id $ClientId
+            $ClientId = $sp.AppId
+        }
+        catch {
+            Write-Host "App '$ClientId' not found" -ForegroundColor Yellow
+        }
         
-        if(-not $Redirect)
+        if(-not $Redirect -and $sp)
         {
             $Redirect = $sp.ReplyUrls[0]
+        }
+
+        # Lookup Resource
+        try {
+            $resource = Get-AadServicePrincipal -Id $ResourceId
+            $ResourceId - $resource.AppId
+        }
+        catch {
+            Write-Host "Resource '$ResourceId' not found" -ForegroundColor Yellow
         }
         
     }    
@@ -302,25 +318,11 @@ class AadContext {
     {
         
         $result = @{}
-
-        if($null -eq $_ClientID -or $_ClientID -eq "")
-        {
-            $result.Error = "Client ID required!"
-            return $result
-        }
-
         
         if($null -eq $_RedirectURI -or $_RedirectURI -eq "")
         {    
-            $result.Error = "Redirect URI required!"
-            return $result
+            $_RedirectURI = "https://login.microsoftonline.com/common/oauth2/nativeclient"
         }   
-
-        if($null -eq $_ResourceId -or $_ResourceId -eq "")
-        {    
-            $result.Error = "Resource Id required!"
-            return $result
-        }
 
         if(-not $_PromptBehavior)
         {    
@@ -367,6 +369,8 @@ class AadContext {
                 $_ExtraQueryParams = $RebuildQueryParams -join "&"
             }
 
+            if(-not $_RedirectURI) {$_RedirectURI = $null}
+
             $request = $this.authContext.AcquireTokenAsync($_ResourceId, $_ClientID, $_RedirectURI, $platformParameters, $UserIdentifier, $_ExtraQueryParams)
             $result = $request.GetAwaiter().GetResult()
 
@@ -375,6 +379,7 @@ class AadContext {
         {
             $result.Error = $true
             $result.ErrorDetails = $_
+            return ($result | ConvertTo-Json)
         }
 
     
