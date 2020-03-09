@@ -54,6 +54,21 @@ function Invoke-AadCommand
 
     $AadAccessToken = $token.AccessToken
 
+
+    $token = $null
+    # Get Token for MS Graph to be used for Azure AD PowerShell
+    $token = Get-AadTokenUsingAdal `
+    -ResourceId $Global:AadSupport.Resources.MsGraph `
+    -ClientId $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
+    -Redirect $Global:AadSupport.Clients.AzureAdPowershell.RedirectUri `
+    -Tenant $Global:AadSupport.Session.TenantId `
+    -UserId $Global:AadSupport.Session.AccountId `
+    -Prompt "Never" `
+    -SkipServicePrincipalSearch `
+    -HideOutput
+  
+    $MsGraphAccessToken = $token.AccessToken
+
     $ErrorHandlingBegin = {
         $Error.Clear()
     }
@@ -68,6 +83,7 @@ function Invoke-AadCommand
         LogLevel = "Info"
         LogFilePath = "c:\AadSupportLogs\"
         AadAccessToken = $AadAccessToken
+        MsAccessToken = $MsGraphAccessToken
         AccountId =$Global:AadSupport.Session.AccountId
 
     }
@@ -80,6 +96,7 @@ function Invoke-AadCommand
         -LogLevel $Params.LogLevel `
         -LogFilePath $Params.LogPath `
         -AadAccessToken $Params.AadAccessToken `
+        -MsAccessToken $Params.MsAccessToken `
         -AccountId $Params.AccountId
         return $session
     }

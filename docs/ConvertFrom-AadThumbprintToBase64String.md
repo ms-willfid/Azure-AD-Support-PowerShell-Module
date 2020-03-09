@@ -1,6 +1,6 @@
 ---
 external help file: _RootModuleShared-help.xml
-Module Name: AadSupportPreview
+Module Name: AadSupport
 online version:
 schema: 2.0.0
 ---
@@ -8,7 +8,7 @@ schema: 2.0.0
 # ConvertFrom-AadThumbprintToBase64String
 
 ## SYNOPSIS
-Converts a Base64Encoded Thumbprint or also known as Key Identifier (Kid) back to its original Thumbprint value
+Converts a Thumbprint to a Base64Encoded Thumbprint or also known as Key Identifier (Kid)
 
 ## SYNTAX
 
@@ -17,22 +17,24 @@ ConvertFrom-AadThumbprintToBase64String [-Thumbprint] <String> [<CommonParameter
 ```
 
 ## DESCRIPTION
-Converts a Base64Encoded Thumbprint or also known as Key Identifier (Kid) back to its original Thumbprint value
+Converts a Thumbprint to a Base64Encoded Thumbprint or also known as Key Identifier (Kid)
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-ConvertFrom-AadBase64StringToThumbprint -Base64String 'z79RnGljTQa9Zh4ZjLq6UaB4eUM='
+ConvertFrom-AadThumbprintToBase64String -Base64String 'CF-BF-51-9C-69-63-4D-06-BD-66-1E-19-8C-BA-BA-51-A0-78-79-43'
 ```
 
+ConvertFrom-AadThumbprintToBase64String -Base64String 'CFBF519C69634D06BD661E198CBABA51A0787943'
+
 Output...
-CF-BF-51-9C-69-63-4D-06-BD-66-1E-19-8C-BA-BA-51-A0-78-79-43
+z79RnGljTQa9Zh4ZjLq6UaB4eUM=
 
 ## PARAMETERS
 
 ### -Thumbprint
-{{ Fill Thumbprint Description }}
+Provide the Thumbprint to be converted to a Base64Encoded value
 
 ```yaml
 Type: String
@@ -42,7 +44,7 @@ Aliases:
 Required: True
 Position: 1
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 

@@ -1,81 +1,92 @@
+$Global:AadSupport = [hashtable]::Synchronized(@{
+    Path = $PSScriptRoot
+    ClientId = "a57bfff5-9e23-439d-9993-48d76ba688ca"
+    RedirectUri = "https://login.microsoftonline.com/common/oauth2/nativeclient"
+    Logging = @{
+        Enabled = $false
+        Path = "c:/AadSupport/"
+        FileName = ""
+    }
+
+    Powershell = @{
+        Modules = @{
+            AzureAd = @{
+                Name = $null
+                Version = $null
+            }
+
+            Azure = @{
+                Name = $null
+                Version = $null
+            }
+        }
+    }
+
+    Session = @{
+        AadInstance = $null
+        TenantId = $null
+        TenantDomain = $null
+        AccountId = $null
+        Active = $false
+        AzureEnvironmentName = "AzureCloud"
+        AzureAccessToken = $null
+        AzureGraphToken = $null
+        AadAccessToken = $null
+    }
+
+    Runspace = @{
+        AzureAd = @{
+            Instance = [runspacefactory]::CreateRunspace()
+            Connected = $false
+        }
+        MSOnline = @{
+            Instance = [runspacefactory]::CreateRunspace()
+            Connected = $false
+        }
+        Adal = @{
+            Instance = [runspacefactory]::CreateRunspace()
+        }
+
+    }
+
+    Common = @{
+        AadInstance = "https://login.microsoftonline.com"
+        TenantId = "common"
+    }
+
+    Clients = @{
+        AzureAdPowerShell = @{
+            ClientId = "1b730954-1685-4b74-9bfd-dac224a7b894"
+            RedirectUri = "urn:ietf:wg:oauth:2.0:oob"
+        }
+        AzurePowerShell = @{
+            ClientId = "1950a258-227b-4e31-a9cf-717495945fc2"
+            RedirectUri = "urn:ietf:wg:oauth:2.0:oob"
+        }
+    }
+
+    Resources = @{
+        AadGraph = "https://graph.windows.net"
+        MsGraph = "https://graph.microsoft.com"
+        AzureRmApi = "https://management.azure.com"
+        AzureServiceApi = "https://management.core.windows.net"
+        KeyVault = "https://vault.azure.net"
+    }
+})
+
 function New-AadSupportSession
 {
-        
-    $Global:AadSupport = [hashtable]::Synchronized(@{
-        Path = $PSScriptRoot
-        ClientId = "a57bfff5-9e23-439d-9993-48d76ba688ca"
-        RedirectUri = "https://login.microsoftonline.com/common/oauth2/nativeclient"
-        Logging = @{
-            Enabled = $false
-            Path = "c:/AadSupport/"
-            FileName = ""
-        }
-    
-        Powershell = @{
-            Modules = @{
-                AzureAd = @{
-                    Name = $null
-                    Version = $null
-                }
-    
-                Azure = @{
-                    Name = $null
-                    Version = $null
-                }
-            }
-        }
-    
-        Session = @{
-            AadInstance = $null
-            TenantId = $null
-            TenantDomain = $null
-            AccountId = $null
-            Active = $false
-            AzureEnvironmentName = "AzureCloud"
-            AzureAccessToken = $null
-            AzureGraphToken = $null
-            AadAccessToken = $null
-        }
-    
-        Runspace = @{
-            AzureAd = @{
-                Instance = [runspacefactory]::CreateRunspace()
-                Connected = $false
-            }
-            MSOnline = @{
-                Instance = [runspacefactory]::CreateRunspace()
-                Connected = $false
-            }
-            Adal = @{
-                Instance = [runspacefactory]::CreateRunspace()
-            }
-    
-        }
-    
-        Common = @{
-            AadInstance = "https://login.microsoftonline.com"
-            TenantId = "common"
-        }
-    
-        Clients = @{
-            AzureAdPowerShell = @{
-                ClientId = "1b730954-1685-4b74-9bfd-dac224a7b894"
-                RedirectUri = "urn:ietf:wg:oauth:2.0:oob"
-            }
-            AzurePowerShell = @{
-                ClientId = "1950a258-227b-4e31-a9cf-717495945fc2"
-                RedirectUri = "urn:ietf:wg:oauth:2.0:oob"
-            }
-        }
-    
-        Resources = @{
-            AadGraph = "https://graph.windows.net"
-            MsGraph = "https://graph.microsoft.com"
-            AzureRmApi = "https://management.azure.com"
-            AzureServiceApi = "https://management.core.windows.net"
-            KeyVault = "https://vault.azure.net"
-        }
-    })
+    $Global:AadSupport.Session = @{
+        AadInstance = $null
+        TenantId = $null
+        TenantDomain = $null
+        AccountId = $null
+        Active = $false
+        AzureEnvironmentName = "AzureCloud"
+        AzureAccessToken = $null
+        AzureGraphToken = $null
+        AadAccessToken = $null
+    }
 }
 
 New-AadSupportSession
@@ -87,7 +98,7 @@ Write-Host "https://github.com/ms-willfid/aad-support-psh-module" -ForegroundCol
 # Check if update is available
 $remote_module = Find-Module -Name AadSupport
 $local_module = Get-Module -ListAvailable -Name AadSupport
-if ($local_module -and $remote_module.Version -ne $local_module.Version.toString()) {
+if ($local_module -and $remote_module.Version -gt $local_module.Version.toString()) {
     Write-Host ""
     Write-Host "There is a update available for AadSupport" -ForegroundColor Yellow
     Write-Host "Run the following command... 'Update-AadSupport'"
@@ -149,6 +160,11 @@ $Global:AadSupport.Powershell.Modules.AzureAd.Version = $ModuleVersion
 # Check Azure PowerShell is updated
 if ($AzureModule)
 {
+    if($AzureModule.Count -gt 1)
+    {
+        Write-Host "You have more than one AzureAdPreview installed. This may impose problems. Please un-install one."
+    }
+
     if($AzureModule.Version.ToString() -lt "2.7.0")
     {
         Write-Host ""

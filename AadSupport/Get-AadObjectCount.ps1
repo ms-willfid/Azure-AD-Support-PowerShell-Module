@@ -62,9 +62,9 @@ function Get-AadObjectCount
     }
 
     $PolicyCount = 0
-    if($Global:AadSupport.Powershell.Modules.AzureAd.Name -eq "AzureAdPreview")
+    if($Global:AadSupport.Powershell.Modules.AzureAd.Name -eq "AzureADPreview")
     {
-        Write-Host "Getting Azure AD Policy Count. This one might take a while."
+        Write-Host "Getting Azure AD Policy Count."
         $PolicyCount = Invoke-AadCommand -Command {
             (Get-AzureADPolicy -All $true).Count
         }

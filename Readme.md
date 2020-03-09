@@ -30,7 +30,10 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 ## Version History
 
-### 0.3.0 | Mar-9 2020
+### 0.3.1 | Mar-9 2020
+* Found and fixed a few bugs.
+
+### 0.3.0 | Mar-8 2020
 * Added Get-AadConsent : Perform queries on all consented permissions (much more flexible than Get-AadConsentedPermissions)
 * Removing Get-AadConsentedPermissions
 * Added Revoke-AadConsent : Revoke any consent

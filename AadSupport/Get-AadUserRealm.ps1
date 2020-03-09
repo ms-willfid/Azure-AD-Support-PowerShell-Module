@@ -12,9 +12,11 @@ function Get-AadUserRealm
     {
         $AadInstance = $Global:AadSupport.Session.AadInstance
     }
-    else
+    
+    # If AadInstance is still null, lets set a default
+    if(-not $AadInstance)
     {
-        $AadInstance = $Global:AadSupport.Common.AadInstance
+        $AadInstance = "https://login.microsoftonline.com"
     }
 
     return (Invoke-WebRequest -Uri "$AadInstance/getuserrealm.srf?login=$UserPrincipalName" -UseBasicParsing).Content | ConvertFrom-Json

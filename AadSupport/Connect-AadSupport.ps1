@@ -128,6 +128,12 @@ function Connect-AadSupport
         $AccountId = $Global:AadSupport.Session.AccountId
     }
 
+    # if still null, We want to pass an empty AccountId
+    if(!$AccountId)
+    {
+        $AccountId = ""
+    }
+
     try {
 
         if(!$AccountId)
@@ -166,6 +172,13 @@ function Connect-AadSupport
                 -Prompt $Prompt `
                 -SkipServicePrincipalSearch `
                 -HideOutput
+        }
+
+        # If we didnt get a token lets stop
+        if(!$token)
+        {
+            Write-Host "Failed to authenticate. User most likely cancelled." -Foreground Yellow
+            return
         }
 
         $Global:AadSupport.Session.AccountId = $token.DisplayableId

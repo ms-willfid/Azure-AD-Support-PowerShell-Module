@@ -23,9 +23,8 @@ Function ConvertFrom-AadBase64StringToThumbprint {
     [cmdletbinding()]
 
     param(
-        [parameter(Mandatory=$true)]
-        [String]
-        $Base64String
+        [parameter(Mandatory=$true, Position=0, ValueFromPipeline = $true)]
+        [String] $Base64String
     )
 
     while($Base64String.Length % 4 -ne 0)
