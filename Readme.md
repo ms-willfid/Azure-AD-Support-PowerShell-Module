@@ -5,9 +5,9 @@
 Use this PowerShell module at your own risk. There is no support model for this PowerShell module except through this github repository. Please report any issues here... 
 https://github.com/ms-willfid/aad-support-psh-module/issues
 
-This PowerShell module is intended to help support, troubleshoot, and diagnose issues with common Azure AD issues such as application integration and sign-in failures.
+This PowerShell module is intended to help support, troubleshoot, diagnosea,d provide quick fixes for common Azure AD issues such as application integration and sign-in failures.
 
-DO NOT USE this PowerShell module for production and do not have any dependency on any of the cmdlets.
+DO NOT USE this PowerShell module for production and do not have any dependency on any of the cmdlets. Expect breaking changes and no SLA on resoling issues within this PowerShell module.
 
 Cmdlets may change at any time without notice.
 
@@ -29,6 +29,16 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 
 ## Version History
+
+### 0.3.0 | Mar-9 2020
+* Added Get-AadConsent : Perform queries on all consented permissions (much more flexible than Get-AadConsentedPermissions)
+* Removing Get-AadConsentedPermissions
+* Added Revoke-AadConsent : Revoke any consent
+* Update to Get-AadTokenUsingAdal to now support Resource Owner Password Credential flow (using ADAL)  
+* Update to Get-AadObjectCount that now accounts for objects that counts against your Quota
+* Fixed a bug when using MSOnline PowerShell module breaks the usage of this module
+* Fixed bug in Get-AadTokenUsingAdal where you could not use a display name for the ResourceId
+* Fixed other random bugs. Who knows maybe created more undetected bugs.
 
 ### 0.2.8 | Oct-2 2019
 * Added Get-AadReportCredentialsExpiringSoon : Lists all Apps and service principals where Key Credentials and Password credentials are about to expire
