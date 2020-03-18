@@ -5,14 +5,14 @@
 Use this PowerShell module at your own risk. There is no support model for this PowerShell module except through this github repository. Please report any issues here... 
 https://github.com/ms-willfid/aad-support-psh-module/issues
 
-This PowerShell module is intended to help support, troubleshoot, diagnosea,d provide quick fixes for common Azure AD issues such as application integration and sign-in failures.
+This PowerShell module is intended to help support, troubleshoot, diagnose, and provide quick fixes for common Azure AD issues such as application integration and sign-in failures.
 
-DO NOT USE this PowerShell module for production and do not have any dependency on any of the cmdlets. Expect breaking changes and no SLA on resoling issues within this PowerShell module.
+DO NOT USE this PowerShell module for production and do not have any dependency on any of the cmdlets. Expect breaking changes and no SLA on resolving issues within this PowerShell module.
 
 Cmdlets may change at any time without notice.
 
 Best regards,
-Bill Fiddes
+Will Fiddes
 
 ## Install
 
@@ -30,7 +30,7 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 ## Version History
 
-### 0.3.3 |
+### 0.3.3 | Mar-18 2020
 * Added Test-AadToken (alias Validate-AadToken)
 * Added Get-AadOpenIdConnectConfiguration
 * Added Get-AadReportMfaEnabled

@@ -12,7 +12,7 @@
 RootModule = '.\_RootModuleShared.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.3'
+ModuleVersion = '0.3.4'
 
 # ID used to uniquely identify this module
 GUID = '5e5f83b2-7760-43db-aee9-872bf7dfd327'
