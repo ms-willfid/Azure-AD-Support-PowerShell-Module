@@ -1,15 +1,30 @@
 <#
 .SYNOPSIS
-#
+Get the App roles assigned to the specified object
 
 .DESCRIPTION
-Long description
+Get the App roles assigned to the specified object
+
+.PARAMETER ServicePrincipalId
+Specify by the Service Principal
 
 .PARAMETER ObjectId
-Parameter description
+Specify by any object ID
+
+.PARAMETER ObjectType
+Specify the Object type based on Object id specified
+
+.PARAMETER UserId
+Specify the User
 
 .EXAMPLE
-An example
+Get-AadAppRolesByObject -ServicePrincipalId 'Contoso App'
+
+ResourceDisplayName : Microsoft Graph
+ResourcePermission  : User.ReadWrite.All
+DirectAssignment    : True
+GetsAssignmentBy    :
+Id                  : ef7d1fa9-1e37-48fd-bb58-ad10a78cbd18
 
 .NOTES
 General notes
@@ -24,7 +39,7 @@ function Get-AadAppRolesByObject {
         [parameter(ValueFromPipeline=$true)]
         $ObjectId,
 
-        [Parameter(mandatory=$true, ParameterSetName="ByObjectId")]
+        [Parameter(ParameterSetName="ByObjectId")]
         [parameter(ValueFromPipeline=$true)]
         [ValidateSet("User","ServicePrincipal")]
         $ObjectType,
@@ -32,10 +47,6 @@ function Get-AadAppRolesByObject {
         [Parameter(mandatory=$true, ParameterSetName="ByUserId")]
         $UserId
     )
-    
-    # REQUIRE AadSupport Session
-    RequireConnectAadSupport
-    # END REGION
 
     if($ObjectId -and -not $ObjectType)
     {

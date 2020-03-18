@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-AadAppRolesByObject
 
 ## SYNOPSIS
-#
+Get the App roles assigned to the specified object
 
 ## SYNTAX
 
@@ -20,7 +20,7 @@ Get-AadAppRolesByObject -ServicePrincipalId <Object> [-ObjectId <Object>] [-Obje
 
 ### ByObjectId
 ```
-Get-AadAppRolesByObject -ObjectId <Object> -ObjectType <Object> [<CommonParameters>]
+Get-AadAppRolesByObject -ObjectId <Object> [-ObjectType <Object>] [<CommonParameters>]
 ```
 
 ### ByUserId
@@ -29,19 +29,25 @@ Get-AadAppRolesByObject [-ObjectId <Object>] [-ObjectType <Object>] -UserId <Obj
 ```
 
 ## DESCRIPTION
-Long description
+Get the App roles assigned to the specified object
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-An example
+Get-AadAppRolesByObject -ServicePrincipalId 'Contoso App'
 ```
+
+ResourceDisplayName : Microsoft Graph
+ResourcePermission  : User.ReadWrite.All
+DirectAssignment    : True
+GetsAssignmentBy    :
+Id                  : ef7d1fa9-1e37-48fd-bb58-ad10a78cbd18
 
 ## PARAMETERS
 
 ### -ServicePrincipalId
-{{ Fill ServicePrincipalId Description }}
+Specify by the Service Principal
 
 ```yaml
 Type: Object
@@ -56,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -ObjectId
-Parameter description
+Specify by any object ID
 
 ```yaml
 Type: Object
@@ -83,7 +89,7 @@ Accept wildcard characters: False
 ```
 
 ### -ObjectType
-{{ Fill ObjectType Description }}
+Specify the Object type based on Object id specified
 
 ```yaml
 Type: Object
@@ -102,7 +108,7 @@ Type: Object
 Parameter Sets: ByObjectId
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
@@ -110,7 +116,7 @@ Accept wildcard characters: False
 ```
 
 ### -UserId
-{{ Fill UserId Description }}
+Specify the User
 
 ```yaml
 Type: Object

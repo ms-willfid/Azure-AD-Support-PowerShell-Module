@@ -27,9 +27,17 @@ Function ConvertFrom-AadThumbprintToBase64String {
         [String] $Thumbprint
     )
 
-    $Bytes = Convert-ThumbprintToByteArray -Thumbprint ($Thumbprint.Replace("-",""))
+    # Imports
+    #. ("$($Global:AadSupport.Path)\internals\Internals-AadConversions.ps1")
+
+    $Bytes = Convert-AadThumbprintToByteArray -Thumbprint ($Thumbprint.Replace("-",""))
 
     $hashedString =[Convert]::ToBase64String($Bytes)
+
+ 
+    $hashedString = $hashedString.Split('=')[0]
+    $hashedString = $hashedString.Replace('+', '-')
+    $hashedString = $hashedString.Replace('/', '_')
 
     return $hashedString
 }

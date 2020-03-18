@@ -15,8 +15,11 @@ Export-ModuleMember -Function Get-AadDateTime
 Export-ModuleMember -Function Get-AadDiscoveryKeys
 Export-ModuleMember -Function Get-AadKeyVaultAccessByObject
 Export-ModuleMember -Function Get-AadObjectCount
+Export-ModuleMember -Function Get-AadOpenIdConnectConfiguration
 Export-ModuleMember -Function Get-AadReportCredentialsExpiringSoon
-Export-ModuleMember -Function Get-AadReportUserMfaEnrollment
+Export-ModuleMember -Function Get-AadReportMfaEnrolled
+Export-ModuleMember -Function Get-AadReportMfaEnabled
+Export-ModuleMember -Function Get-AadReportMfaNotEnrolled
 Export-ModuleMember -Function Get-AadServicePrincipal
 Export-ModuleMember -Function Get-AadServicePrincipalAdmins
 Export-ModuleMember -Function Get-AadServicePrincipalAccess
@@ -32,3 +35,7 @@ Export-ModuleMember -Function Revoke-AadConsent
 Export-ModuleMember -Function Import-AadAzureRoleAssignments
 Export-ModuleMember -Function Export-AadAzureRoleAssignments
 Export-ModuleMember -Function Update-AadSupport
+
+Export-ModuleMember -Function Test-AadToken
+New-Alias -Name "Validate-AadToken" Test-AadToken
+Export-ModuleMember -Alias Validate-AadToken

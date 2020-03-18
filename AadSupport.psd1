@@ -12,7 +12,7 @@
 RootModule = '.\_RootModuleShared.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.1'
+ModuleVersion = '0.3.3'
 
 # ID used to uniquely identify this module
 GUID = '5e5f83b2-7760-43db-aee9-872bf7dfd327'
@@ -64,38 +64,42 @@ ScriptsToProcess = @("_startup.ps1")
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
-    "Connect-AadSupport.ps1",
-    "ConvertFrom-AadJwtTime.ps1",
-    "ConvertFrom-AadBase64StringToThumbprint.ps1",
-    "ConvertFrom-AadThumbprintToBase64String.ps1",
-    "ConvertFrom-AadBase64Certificate.ps1",
-    "ConvertFrom-AadJwtToken.ps1",
-    "Import-AadAzureRoleAssignments.ps1",
-    "Export-AadAzureRoleAssignments.ps1",
-    "Get-AadAdminRolesByObject.ps1",
-    "Get-AadApplication.ps1",
-    "Get-AadAppRolesByObject.ps1",
-    "Get-AadAzureRoleAssignments.ps1",
-    "Get-AadDateTime.ps1",
-    "Get-AadDiscoveryKeys.ps1",
-    "Get-AadConsent.ps1",
-    "Get-AadKeyVaultAccessByObject.ps1",
-    "Get-AadObjectCount.ps1",
-    "Get-AadReportUserMfaEnrollment.ps1",
-    "Get-AadReportCredentialsExpiringSoon.ps1",
-    "Get-AadServicePrincipal.ps1",
-    "Get-AadServicePrincipalAdmins.ps1",
-    "Get-AadServicePrincipalAccess.ps1",
-    "Get-AadToken.ps1",
-    "Get-AadTokenUsingAdal.ps1",
-    "Get-AadTenantAdmins.ps1",
-    "Get-AadUserAccess.ps1",
-    "Get-AadUserInfo.ps1",
-    "Get-AadUserRealm.ps1",
-    "Invoke-AadProtectedApi.ps1",
-    "Set-AadConsent.ps1",
-    "Revoke-AadConsent.ps1",
-    "Update-AadSupport.ps1"
+    ".\functions\Connect-AadSupport.ps1",
+    ".\functions\ConvertFrom-AadJwtTime.ps1",
+    ".\functions\ConvertFrom-AadBase64StringToThumbprint.ps1",
+    ".\functions\ConvertFrom-AadThumbprintToBase64String.ps1",
+    ".\functions\ConvertFrom-AadBase64Certificate.ps1",
+    ".\functions\ConvertFrom-AadJwtToken.ps1",
+    ".\functions\Import-AadAzureRoleAssignments.ps1",
+    ".\functions\Export-AadAzureRoleAssignments.ps1",
+    ".\functions\Get-AadAdminRolesByObject.ps1",
+    ".\functions\Get-AadApplication.ps1",
+    ".\functions\Get-AadAppRolesByObject.ps1",
+    ".\functions\Get-AadAzureRoleAssignments.ps1",
+    ".\functions\Get-AadDateTime.ps1",
+    ".\functions\Get-AadDiscoveryKeys.ps1",
+    ".\functions\Get-AadConsent.ps1",
+    ".\functions\Get-AadKeyVaultAccessByObject.ps1",
+    ".\functions\Get-AadObjectCount.ps1",
+    ".\functions\Get-AadOpenIdConnectConfiguration.ps1",
+    ".\functions\Get-AadReportMfaEnabled.ps1",
+    ".\functions\Get-AadReportMfaEnrolled.ps1",
+    ".\functions\Get-AadReportMfaNotEnrolled.ps1",
+    ".\functions\Get-AadReportCredentialsExpiringSoon.ps1",
+    ".\functions\Get-AadServicePrincipal.ps1",
+    ".\functions\Get-AadServicePrincipalAdmins.ps1",
+    ".\functions\Get-AadServicePrincipalAccess.ps1",
+    ".\functions\Get-AadToken.ps1",
+    ".\functions\Get-AadTokenUsingAdal.ps1",
+    ".\functions\Get-AadTenantAdmins.ps1",
+    ".\functions\Get-AadUserAccess.ps1",
+    ".\functions\Get-AadUserInfo.ps1",
+    ".\functions\Get-AadUserRealm.ps1",
+    ".\functions\Invoke-AadProtectedApi.ps1",
+    ".\functions\Set-AadConsent.ps1",
+    ".\functions\Revoke-AadConsent.ps1",
+    ".\functions\Update-AadSupport.ps1",
+    ".\functions\Test-AadToken.ps1"
 )
 
 # Functions to export from this module
@@ -105,7 +109,7 @@ FunctionsToExport = '*-Aad*'
 CmdletsToExport = '*-Aad*'
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = ''
 
 # Aliases to export from this module
 AliasesToExport = '*-Aad*'
@@ -114,40 +118,7 @@ AliasesToExport = '*-Aad*'
 # ModuleList = @()
 
 # List of all files packaged with this module
-FileList = @(
-    "Connect-AadSupport.ps1",
-    "ConvertFrom-AadJwtTime.ps1",
-    "ConvertFrom-AadBase64StringToThumbprint.ps1",
-    "ConvertFrom-AadThumbprintToBase64String.ps1",
-    "ConvertFrom-AadBase64Certificate.ps1",
-    "ConvertFrom-AadJwtToken.ps1",
-    "Import-AadAzureRoleAssignments.ps1",
-    "Export-AadAzureRoleAssignments.ps1",
-    "Get-AadAdminRolesByObject.ps1",
-    "Get-AadApplication.ps1",
-    "Get-AadAppRolesByObject.ps1",
-    "Get-AadAzureRoleAssignments.ps1",
-    "Get-AadDateTime.ps1",
-    "Get-AadDiscoveryKeys.ps1",
-    "Get-AadConsent.ps1",
-    "Get-AadKeyVaultAccessByObject.ps1",
-    "Get-AadObjectCount.ps1",
-    "Get-AadReportUserMfaEnrollment.ps1",
-    "Get-AadReportCredentialsExpiringSoon.ps1",
-    "Get-AadServicePrincipal.ps1",
-    "Get-AadServicePrincipalAdmins.ps1",
-    "Get-AadServicePrincipalAccess.ps1",
-    "Get-AadToken.ps1",
-    "Get-AadTokenUsingAdal.ps1",
-    "Get-AadTenantAdmins.ps1",
-    "Get-AadUserAccess.ps1",
-    "Get-AadUserInfo.ps1",
-    "Get-AadUserRealm.ps1",
-    "Invoke-AadProtectedApi.ps1",
-    "Set-AadConsent.ps1",
-    "Revoke-AadConsent.ps1",
-    "Update-AadSupport.ps1"
-)
+FileList = @()
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
 # PrivateData = ''

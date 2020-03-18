@@ -1,3 +1,40 @@
+<#
+.SYNOPSIS
+Get the Azure Roles assigned to the specified object
+
+.DESCRIPTION
+Get the Azure Roles assigned to the specified object
+
+.PARAMETER ServicePrincipalId
+Specify by the Service Principal
+
+.PARAMETER ObjectId
+Specify by any object ID
+
+.PARAMETER ObjectType
+Specify the Object type based on Object id specified
+
+.PARAMETER UserId
+Specify the User
+
+.PARAMETER ServicePrincipalName
+Specify the ServicePrincipalName
+
+.PARAMETER SigninName
+Specify the SigninName
+
+.EXAMPLE
+Get-AadAzureRoleAssignments -ServicePrincipalId 'Contoso App'
+
+ResourceDisplayName : Microsoft Graph
+ResourcePermission  : User.ReadWrite.All
+DirectAssignment    : True
+GetsAssignmentBy    :
+Id                  : ef7d1fa9-1e37-48fd-bb58-ad10a78cbd18
+
+.NOTES
+General notes
+#>
 function Get-AadAzureRoleAssignments {
     # THIS FUNCTION IS STANDALONE
     [CmdletBinding(DefaultParameterSetName="ByObject")]
@@ -138,21 +175,22 @@ function Get-AadAzureRoleAssignments {
                 $Groups.GroupIds = $GroupIdsCheck
 
                 # Check if ServicePrincipal is a member of any of those groups
-                $IsMemberOf = Invoke-AadCommand -Command {
-                    Param($Params)
-                    Select-AzureADGroupIdsServicePrincipalIsMemberOf -ObjectId $Params.ObjectId -GroupIdsForMembershipCheck $Params.Groups
-                } -Parameters @{
-                    ObjectId = $ObjectId
-                    Groups = $Groups
-                }
-
-                # Get Azure RBAC for the groups in which the Service Principal is a member of
-                foreach($GroupId in $IsMemberOf)
+                if($GroupIdsCheck)
                 {
-                    $RoleAssignments += $AzRoleAssignments | Where-Object { $_.ObjectId -eq $GroupId }
+                    $IsMemberOf = Invoke-AadCommand -Command {
+                        Param($Params)
+                        Select-AzureADGroupIdsServicePrincipalIsMemberOf -ObjectId $Params.ObjectId -GroupIdsForMembershipCheck $Params.Groups
+                    } -Parameters @{
+                        ObjectId = $ObjectId
+                        Groups = $Groups
+                    }
+
+                    # Get Azure RBAC for the groups in which the Service Principal is a member of
+                    foreach($GroupId in $IsMemberOf)
+                    {
+                        $RoleAssignments += $AzRoleAssignments | Where-Object { $_.ObjectId -eq $GroupId }
+                    }
                 }
-                
-                
             }
 
             if($SigninName)

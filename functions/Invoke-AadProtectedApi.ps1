@@ -8,7 +8,7 @@ Make a API request to a protected AAD resource using a Accesss Token.
 .PARAMETER Endpoint
 This is the API url you are making a request to.
 
-.PARAMETER Bearer
+.PARAMETER AccessToken
 Pass the access token to the protected API
 
 .PARAMETER GET
@@ -33,7 +33,7 @@ Include a body content with your API request
 Specify a ContentType to use. (Default application/json)
 
 .EXAMPLE
-Invoke-AadProtectedApi -GET -Endpoint "https://graph.microsoft.com/v1.0/me" -Bearer "eyJ***"
+Invoke-AadProtectedApi -GET -Endpoint "https://graph.microsoft.com/v1.0/me" -AccessToken "eyJ***"
 
 .NOTES
 General notes
@@ -66,13 +66,6 @@ function Invoke-AadProtectedApi
 
        $ContentType = "application/json"
     ) #end param
-
-    if(-not $Bearer)
-    {
-        # REQUIRE AadSupport Session
-        RequireConnectAadSupport
-        # END REGION
-    }
     
 
     # Parameter requirements
@@ -81,9 +74,9 @@ function Invoke-AadProtectedApi
         throw "Body required when using POST, PATCH, or PUT"
     }
 
-    if(-not $Bearer -and -not $Client)
+    if(-not $AccessToken -and -not $Client)
     {
-        throw "You must specify either -Bearer or -Client"
+        throw "You must specify either -AccessToken or -Client"
     }
 
 
@@ -100,9 +93,16 @@ function Invoke-AadProtectedApi
 
     if($Client -and $Resource)
     {
-        $ClientId = (Get-AadServicePrincipal -Id $Client).AppId
-        $ResourceId = (Get-AadServicePrincipal -Id $Resource).AppId
+        if(!$ClientId)
+        {
+            $ClientId = (Get-AadServicePrincipal -Id $Client).AppId
+        }
 
+        if(!$ResourceId)
+        {
+            $ResourceId = (Get-AadServicePrincipal -Id $Resource).AppId
+        }
+        
         if(!$ClientId) {
             $ClientId = $Client
         }
@@ -118,15 +118,24 @@ function Invoke-AadProtectedApi
             return $token["Error"]
         }
 
-        $bearer = $token.AccessToken
+        $AccessToken = $token.AccessToken
     }
 
     $Result = @{}
     $Result.Content = @()
     $nextLink = $null
 
+    $RetryAttempts = 0
+    $MaxRetryAttempts = 5
     do {
-        Start-Sleep -Milliseconds 100
+        # Refresh Token if ClientId and ResourceId provided
+        if($ClientId -and $ResourceId)
+        {
+            $token = Get-AadTokenUsingAdal -ClientId $ClientId -ResourceId $ResourceId -UserId $Global:AadSupport.Session.AccountId -Prompt Auto -HideOutput -SkipServicePrincipalSearch
+            $AccessToken = $token.AccessToken
+        }
+        
+        Start-Sleep -Milliseconds 60
         
         if($nextLink)
         {
@@ -138,35 +147,65 @@ function Invoke-AadProtectedApi
             write-verbose "Making Graph call..."
             if ($Method -eq "GET")
             {
-                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method GET -ContentType $ContentType
+                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $AccessToken" } -Uri $endpoint -Method GET -ContentType $ContentType
             }
 
             if ($Method -eq "POST" -or $Method -eq "PATCH" -or $Method -eq "PUT")
             {   
-                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method $Method -Body $Body -ContentType $ContentType
+                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $AccessToken" } -Uri $endpoint -Method $Method -Body $Body -ContentType $ContentType
             }
 
             if ($Method -eq "DELETE")
             {
-                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $bearer" } -Uri $endpoint -Method $Method -ContentType $ContentType
+                $request = Invoke-WebRequest -Headers @{ "Authorization" = "Bearer $AccessToken" } -Uri $endpoint -Method $Method -ContentType $ContentType
             }
 
         }
         catch{
+            $RetryAttempts++
+            Start-Sleep -Milliseconds (1000*$RetryAttempts*2)
+
             Write-Host "Exception calling API." -ForegroundColor Red
             if($request.Response.Content)
             {
-                $request.Response.Content
+                $String = $request.Response.Content
+            }
+
+            elseif($_.Exception.Response.StatusCode -eq "429")
+            {
+                Write-Host "Throttling limit hit: StatusCode 429: Waiting 1 minute. It may take up to 5 minutes" -ForegroundColor Yellow
+                Start-Sleep -Seconds 61
+                Continue
+            }
+
+            elseif($_.Exception.Response.StatusCode -eq "Unauthorized")
+            {
+                Write-Host "Invalid Access Token." -ForegroundColor Yellow
+                throw $_
+            }
+
+            elseif($_.Exception.Response.StatusCode -eq "Forbidden")
+            {
+                Write-Host "Missing Permissions." -ForegroundColor Yellow
+                Start-Sleep -Seconds 300
+                throw $_
             }
 
             elseif($_.Exception.Response) {
                 $reqstream = $_.Exception.Response.GetResponseStream()
-                $stream = new-object System.IO.StreamReader $reqstream
-                $string = $stream.ReadToEnd()
-                Write-Host $string
+                $stream = [System.IO.StreamReader]::new($reqstream)
+                $String = $stream.ReadToEnd()
+                $stream.Close()
+                $reqstream.Close()
             }
             
-            throw $_
+            Write-Host $String
+            if($RetryAttempts -gt $MaxRetryAttempts)
+            {
+                throw $_
+            }
+            
+            continue
         }
     
         try{

@@ -200,10 +200,7 @@ function Connect-AadSupport
     }
     catch {
         throw $_
-    }
-
-        
-    
+    } 
 }
 
 

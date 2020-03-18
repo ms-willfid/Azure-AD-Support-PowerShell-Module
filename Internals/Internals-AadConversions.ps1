@@ -1,6 +1,5 @@
 # ############################################################################
-Function Convert-ThumbprintToByteArray {
-
+Function Convert-AadThumbprintToByteArray {
     [cmdletbinding()]
 
     param(
@@ -50,8 +49,9 @@ function Base64UrlDecode($Value)
     {
         $Value += "="
     }
-
+    
     return $Value.Replace('-', '+').Replace('_', '/')
+
 }
 
 

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-AadApplication
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Intelligence to return the Application object by looking up using any of its identifiers.
 
 ## SYNTAX
 
@@ -38,18 +38,31 @@ Get-AadApplication -ReplyAddress <Object> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Intelligence to return the Application object by looking up using any of its identifiers.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
+```
+Get-AadApplication -Id 'Contoso Web App'
 ```
 
-{{ Add example description here }}
-
 ## PARAMETERS
+
+### -Id
+Either specify Application Name, Display Name, Object ID, Application/Client ID, or Application Object ID
+
+```yaml
+Type: Object
+Parameter Sets: ByAnyId
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
 
 ### -AppId
 {{ Fill AppId Description }}
@@ -57,21 +70,6 @@ PS C:\> {{ Add example code here }}
 ```yaml
 Type: Object
 Parameter Sets: ByAppId
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AppUriId
-{{ Fill AppUriId Description }}
-
-```yaml
-Type: Object
-Parameter Sets: ByAppUriId
 Aliases:
 
 Required: True
@@ -96,18 +94,18 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Id
-{{ Fill Id Description }}
+### -AppUriId
+{{ Fill AppUriId Description }}
 
 ```yaml
 Type: Object
-Parameter Sets: ByAnyId
+Parameter Sets: ByAppUriId
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
-Accept pipeline input: True (ByValue)
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -131,11 +129,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.Object
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
+Returns the Application object using Get-AzureAdApplication and filter based on the Id parameter
 
 ## RELATED LINKS

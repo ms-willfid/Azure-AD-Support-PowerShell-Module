@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-AadAzureRoleAssignments
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the Azure Roles assigned to the specified object
 
 ## SYNTAX
 
@@ -47,21 +47,25 @@ Get-AadAzureRoleAssignments [-ObjectId <String>] [-ObjectType <String>] -SigninN
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the Azure Roles assigned to the specified object
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
+```
+Get-AadAzureRoleAssignments -ServicePrincipalId 'Contoso App'
 ```
 
-{{ Add example description here }}
+ResourceDisplayName : Microsoft Graph
+ResourcePermission  : User.ReadWrite.All
+DirectAssignment    : True
+GetsAssignmentBy    :
+Id                  : ef7d1fa9-1e37-48fd-bb58-ad10a78cbd18
 
 ## PARAMETERS
 
 ### -ObjectId
-{{ Fill ObjectId Description }}
+Specify by any object ID
 
 ```yaml
 Type: String
@@ -88,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -ObjectType
-{{ Fill ObjectType Description }}
+Specify the Object type based on Object id specified
 
 ```yaml
 Type: String
@@ -115,7 +119,7 @@ Accept wildcard characters: False
 ```
 
 ### -ServicePrincipalId
-{{ Fill ServicePrincipalId Description }}
+Specify by the Service Principal
 
 ```yaml
 Type: String
@@ -129,8 +133,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -UserId
+Specify the User
+
+```yaml
+Type: String
+Parameter Sets: ByUserId
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ServicePrincipalName
-{{ Fill ServicePrincipalName Description }}
+Specify the ServicePrincipalName
 
 ```yaml
 Type: String
@@ -157,26 +176,11 @@ Accept wildcard characters: False
 ```
 
 ### -SigninName
-{{ Fill SigninName Description }}
+Specify the SigninName
 
 ```yaml
 Type: String
 Parameter Sets: BySigninName
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UserId
-{{ Fill UserId Description }}
-
-```yaml
-Type: String
-Parameter Sets: ByUserId
 Aliases:
 
 Required: True
@@ -191,11 +195,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.String
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
+General notes
 
 ## RELATED LINKS

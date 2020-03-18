@@ -30,6 +30,17 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 ## Version History
 
+### 0.3.3 |
+* Added Test-AadToken (alias Validate-AadToken)
+* Added Get-AadOpenIdConnectConfiguration
+* Added Get-AadReportMfaEnabled
+* Added Get-AadReportMfaNotEnrolled
+* Made changes to Get-AadDiscoveryKeys (now leverages Get-AadOpenIdConnectConfiguration)
+* Renamed cmdlet from 'Get-AadReportUserMfaEnrollment' to 'Get-AadReportMfaEnrolled'
+* And as usual fixed more bugs
+  > Revoke-AadConent now fixed
+  > ConvertFrom-AadThumbprintToBase64String now Url Decodes
+
 ### 0.3.1 | Mar-9 2020
 * Found and fixed a few bugs.
 

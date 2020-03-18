@@ -54,18 +54,6 @@ function Revoke-AadConsent {
         [Parameter(ParameterSetName = 'UserId')]
         [string]$UserId,
 
-        [Parameter(ParameterSetName = 'UserConsentOnly')]
-        [switch]$UserConsentOnly,
-
-        [Parameter(ParameterSetName = 'AdminConsentOnly')]
-        [switch]$AdminConsentOnly,
-
-        [Parameter(ParameterSetName = 'ApplicationOnly')]
-        [switch]$ApplicationOnly,
-
-        [Parameter(ParameterSetName = 'DelegatedOnly')]
-        [switch]$DelegatedOnly,
-
         [ValidateSet('Admin','User', 'All')]
         $ConsentType = 'All',
 
@@ -82,6 +70,11 @@ function Revoke-AadConsent {
     if($ClaimValue -and -not $ResourceId)
     {
         throw "You must provide a 'ResoureId' when using 'ClaimValue'"
+    }
+
+    if($ClaimValue -match " " -or $ClaimValue -match ";" -or $ClaimValue -match ",")
+    {
+        throw "Specifing only one 'ClaimValue' is supported"
     }
 
 
@@ -103,11 +96,22 @@ function Revoke-AadConsent {
         Write-Host "Your account '$authUserId' is not a Global Admin in $TenantDomain."
         throw "Exception: 'Company Administrator' or 'Application Administrator' role REQUIRED"
     } 
+
+    $ConsentedPermissions = Get-AadConsent `
+     -ClientId $ClientId `
+     -ResourceId $ResourceId `
+     -ClaimValue $ClaimValue `
+     -ConsentType $ConsentType `
+     -PermissionType $PermissionType
+     
     
     $CountRemovedPermissions = 0
+
+    # Get output ready, lets create a new line
+    Write-Host ""
+
     foreach($Permission in $ConsentedPermissions)
     {
-        Show-AadSupportStatusBar
         $MsGraphUrl = "https://graph.microsoft.com/beta/oauth2PermissionGrants/$($Permission.Id)"
 
         if($Permission.PermissionType -eq "Delegated")
@@ -121,6 +125,14 @@ function Revoke-AadConsent {
             # Remove the OAuth2PermissionGrant Object
             if($RemoveConsent)
             {
+                $User = $Permission.PrincipalId
+                if(!$User)
+                {
+                    $User = "AllPrincipals"
+                }
+
+                Write-Host "Removing $($Permission.ResourceName) | $($Permission.ConsentType) $($Permission.PermissionType) permission(s): $($Permission.ClaimValue) | User: $User"
+        
                 $CountRemovedPermissions++
                 Invoke-AadProtectedApi `
                 -Client $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
@@ -139,6 +151,8 @@ function Revoke-AadConsent {
                 $JsonBody = @{
                     scope = $NewClaimValues
                 } | ConvertTo-Json -Compress
+
+                Write-Host "Removing $($Permission.ResourceName) | $($Permission.ConsentType) $($Permission.PermissionType) permission: $ClaimValue | $($Permission.PrincipalId)"
              
                 Invoke-AadProtectedApi `
                 -Client $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
@@ -153,6 +167,9 @@ function Revoke-AadConsent {
         if($Permission.PermissionType -eq "Application")
         {
             $CountRemovedPermissions++
+
+            Write-Host "Removing $($Permission.ResourceName) | $($Permission.ConsentType) $($Permission.PermissionType) permission: $($Permission.ClaimValue)"
+
             Invoke-AadCommand -Command {
                 Param($Params)
                 Remove-AzureADServiceAppRoleAssignment -ObjectId $Params.ObjectId -AppRoleAssignmentId $Params.AppRoleAssignmentId
@@ -162,7 +179,8 @@ function Revoke-AadConsent {
             }
         }
     } 
-    
+
+    Write-Host ""
     Write-Host "Removed $CountRemovedPermissions permission(s)"
 }
 

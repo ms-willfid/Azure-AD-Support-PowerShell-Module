@@ -1,3 +1,5 @@
+Set-Alias -Name Get-AadApp -Value Get-AadApplication
+
 <#
 .SYNOPSIS
 Intelligence to return the Application object by looking up using any of its identifiers.
@@ -14,8 +16,6 @@ Get-AadApplication -Id 'Contoso Web App'
 .NOTES
 Returns the Application object using Get-AzureAdApplication and filter based on the Id parameter
 #>
-
-Set-Alias -Name Get-AadApp -Value Get-AadApplication
 
 function Get-AadApplication
 {

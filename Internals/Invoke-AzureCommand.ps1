@@ -47,7 +47,7 @@ function Invoke-AzureCommand
       -Redirect $Global:AadSupport.Clients.AzureAdPowershell.RedirectUri `
       -Tenant $Global:AadSupport.Session.TenantDomain `
       -UserId $Global:AadSupport.Session.AccountId `
-      -Prompt "Never" `
+      -Prompt "Auto" `
       -SkipServicePrincipalSearch `
       -HideOutput
 
@@ -58,7 +58,7 @@ function Invoke-AzureCommand
       -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
       -Tenant $Global:AadSupport.Session.TenantDomain `
       -UserId $Global:AadSupport.Session.AccountId `
-      -Prompt "Never" `
+      -Prompt "Auto" `
       -SkipServicePrincipalSearch `
       -HideOutput
 
@@ -68,7 +68,7 @@ function Invoke-AzureCommand
     -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
     -Tenant $Global:AadSupport.Session.TenantDomain `
     -UserId $Global:AadSupport.Session.AccountId `
-    -Prompt "Never" `
+    -Prompt "Auto" `
     -SkipServicePrincipalSearch `
     -HideOutput
 
@@ -193,6 +193,6 @@ function Invoke-AzureCommand
     if($ErrorInsideRunspace)
     {
         $ErrorInsideRunspace | Log-AadSupport -Force
-        return $ErrorInsideRunspace
+        throw $ErrorInsideRunspace
     }
 }

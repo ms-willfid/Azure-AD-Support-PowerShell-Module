@@ -91,6 +91,16 @@ function New-AadSupportSession
 
 New-AadSupportSession
 
+# Import the internal functions
+$scripts = Get-ChildItem -Path $PSScriptRoot\Internals\*.ps1
+foreach($script in $scripts) {
+    Import-Module ($script.FullName) -Scope Global
+}
+
+# Import Logging function
+$LogScript = "$PSScriptRoot\Internals\imports\Log-AadSupport.ps1"
+. $LogScript
+
 Write-Host ""
 Write-Host "For more information about the 'Azure AD Support PowerShell Module' (AadSupport)..." -ForegroundColor Yellow
 Write-Host "https://github.com/ms-willfid/aad-support-psh-module" -ForegroundColor Yellow
@@ -137,7 +147,6 @@ if ($modulep)
     }
 }
 
-
 # Install Azure AD PowerShell if not installed
 elseif (-not $module -and -not $modulep) {
     Write-Host ""
@@ -162,10 +171,10 @@ if ($AzureModule)
 {
     if($AzureModule.Count -gt 1)
     {
-        Write-Host "You have more than one AzureAdPreview installed. This may impose problems. Please un-install one."
+        Write-Host "You have more than one Azure Module installed. This may impose problems. Please un-install one."
     }
 
-    if($AzureModule.Version.ToString() -lt "2.7.0")
+    if($AzureModule.Version.ToString() -lt "1.7.0")
     {
         Write-Host ""
         Write-Host "Please update your Az PowerShell Module..." -ForegroundColor Yellow
@@ -220,15 +229,8 @@ $modulebase = (Get-Module $ModuleName -ListAvailable | Sort-Object Version -Desc
 $Global:AadSupportAdalPath = $AdalPath = "{0}\Microsoft.IdentityModel.Clients.ActiveDirectory.dll" -f $modulebase
 $adalVersion = ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($Global:AadSupportAdalPath).FileVersion)
 
-# Import the internal functions
-$scripts = Get-ChildItem -Path $PSScriptRoot\Internals\*.ps1
-foreach($script in $scripts) {
-    . $script.FullName
-}
 
-# Import Logging function
-$LogScript = "$PSScriptRoot\Internals\imports\Log-AadSupport.ps1"
-. $LogScript
+
 
 Load-AadSupportAdalAssembly
 
@@ -239,4 +241,3 @@ $Global:AadSupportModule = $true
 
 
 # EXTENSION HELPER METHOS
-

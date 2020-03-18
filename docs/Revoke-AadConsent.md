@@ -24,30 +24,6 @@ Revoke-AadConsent [-ClientId] <String> [-ResourceId <String>] [-ClaimValue <Stri
  [-ConsentType <Object>] [-PermissionType <Object>] [<CommonParameters>]
 ```
 
-### UserConsentOnly
-```
-Revoke-AadConsent [-ClientId] <String> [-ResourceId <String>] [-ClaimValue <String>] [-UserConsentOnly]
- [-ConsentType <Object>] [-PermissionType <Object>] [<CommonParameters>]
-```
-
-### AdminConsentOnly
-```
-Revoke-AadConsent [-ClientId] <String> [-ResourceId <String>] [-ClaimValue <String>] [-AdminConsentOnly]
- [-ConsentType <Object>] [-PermissionType <Object>] [<CommonParameters>]
-```
-
-### ApplicationOnly
-```
-Revoke-AadConsent [-ClientId] <String> [-ResourceId <String>] [-ClaimValue <String>] [-ApplicationOnly]
- [-ConsentType <Object>] [-PermissionType <Object>] [<CommonParameters>]
-```
-
-### DelegatedOnly
-```
-Revoke-AadConsent [-ClientId] <String> [-ResourceId <String>] [-ClaimValue <String>] [-DelegatedOnly]
- [-ConsentType <Object>] [-PermissionType <Object>] [<CommonParameters>]
-```
-
 ## DESCRIPTION
 Revokes a consented permission based on the parameters provided to be used as a filter.
 At minimum, the ClientId is required.
@@ -143,66 +119,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UserConsentOnly
-{{ Fill UserConsentOnly Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: UserConsentOnly
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AdminConsentOnly
-{{ Fill AdminConsentOnly Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AdminConsentOnly
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ApplicationOnly
-{{ Fill ApplicationOnly Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: ApplicationOnly
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DelegatedOnly
-{{ Fill DelegatedOnly Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: DelegatedOnly
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
