@@ -166,6 +166,8 @@ class AadContext {
     [string]AcquireTokenUsingUsernameAndPassword([string]$_ResourceId, [string]$_ClientID, [string]$_UserId, [SecureString]$_Password)
     {
         
+        "STARTING::AcquireTokenUsingUsernameAndPassword" | Log-AadSupportRunspace
+
         $ReturnObject = @{}
         $ReturnObject.Resource = $_ResourceId
         $ReturnObject.ClientID = $_ClientID
@@ -176,6 +178,7 @@ class AadContext {
         Try
         {
             # Acquire Token
+            $this.authContext | ConvertTo-Json | Log-AadSupportRunspace
             $request = [Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContextIntegratedAuthExtensions]::AcquireTokenAsync($this.authContext, $_ResourceId, $_ClientID, $UserPasswordCredential)
             $result = $request.GetAwaiter().GetResult()
 
@@ -253,6 +256,10 @@ class AadContext {
         }
         Catch  #[System.Management.Automation.MethodInvocationException]
         {
+            if($this.authContext.TokenCache.Count -gt 0)
+            {
+                "Cache is NOT empty. Silent failed probably because of different ClientId or UserId specified!" | Log-AadSupportRunspace
+            }
             $ReturnObject.Error = $true
             $ReturnObject.ErrorDetails = $_
         }
@@ -263,9 +270,18 @@ class AadContext {
 
 }
 
+<# ##################################################
+AAD SUPPORT FACING FUNCTIONS TO GET TOKEN
+#################################################### #>
 
 <#
 ## USER DELEGATED FLOW
+
+   Get-AadSupportTokenForUser -Authority "https://login.microsoftonline.com/williamfiddes.onmicrosoft.com" 
+    -ClientId "83258bc7-b7fd-4627-ae9b-e3bd5d550572" 
+    -ResourceId "https://graph.microsoft.com" 
+    -RedirectURI "https://login.microsoftonline.com/common/oauth2/nativeclient"
+
 #>
 function Get-AadSupportTokenForUser
 {
@@ -279,30 +295,38 @@ function Get-AadSupportTokenForUser
         [string]$PromptBehavior,
         [string]$UserId,
         [string]$ExtraQueryParameters =""
-
     )
 
-    if(!$Global:AadSupportAuthenticationContext)
-    {
-        $Global:AadSupportAuthenticationContext = [AadContext]::new($Authority)
-    }
+    "STARTING::Get-AadSupportTokenForUser" | Log-AadSupportRunspace
+    "Authority::$Authority" | Log-AadSupportRunspace
+    "ResourceId::$ResourceId" | Log-AadSupportRunspace
+    "ClientId::$ClientId" | Log-AadSupportRunspace
+    "RedirectURI::$RedirectURI" | Log-AadSupportRunspace
+    "PromptBehavior::$PromptBehavior" | Log-AadSupportRunspace
+    "UserId::$UserId" | Log-AadSupportRunspace
+    "ExtraQueryParameters::$ExtraQueryParameters" | Log-AadSupportRunspace
+
+    $context = GetOrBuildAuthenticationContext -Authority $Authority
 
     $AuthenticationResult = ""
     try {
         if($PromptBehavior -ne "Always")
         {
-            $AuthenticationResult = $Global:AadSupportAuthenticationContext.AcquireSilentToken($ResourceId,$ClientId,$UserId)  | ConvertFrom-Json
-        
+            $AuthenticationResult = $context.AcquireSilentToken($ResourceId,$ClientId,$UserId)  | ConvertFrom-Json
+            $AuthenticationResult | ConvertTo-Json | Log-AadSupportRunspace
         }
 
         if($AuthenticationResult.Error -or $PromptBehavior -eq "Always") {
-            $AuthenticationResult = $Global:AadSupportAuthenticationContext.AcquireToken($ResourceId,$ClientId,$RedirectURI,$PromptBehavior,$UserId, $ExtraQueryParameters ) | ConvertFrom-Json
+            $AuthenticationResult = $context.AcquireToken($ResourceId,$ClientId,$RedirectURI,$PromptBehavior,$UserId, $ExtraQueryParameters ) | ConvertFrom-Json
+            $AuthenticationResult | ConvertTo-Json | Log-AadSupportRunspace
         }
+
+        HandleAuthenticationResult -Authority $Authority -AuthenticationResult $AuthenticationResult
     }
     catch {
         try {
-            $AuthenticationResult = $Global:AadSupportAuthenticationContext.AcquireToken($ResourceId,$ClientId,$RedirectURI,$PromptBehavior,$UserId, $ExtraQueryParameters ) | ConvertFrom-Json
-            
+            $AuthenticationResult = $context.AcquireToken($ResourceId,$ClientId,$RedirectURI,$PromptBehavior,$UserId, $ExtraQueryParameters ) | ConvertFrom-Json
+            $AuthenticationResult | ConvertTo-Json | Log-AadSupportRunspace
         }
         catch {
             return @{
@@ -331,14 +355,21 @@ function Get-AadSupportTokenForUserWithPassword
         [SecureString]$Password
     )
 
-    if(!$Global:AadSupportAuthenticationContext)
-    {
-        $Global:AadSupportAuthenticationContext = [AadContext]::new($Authority)
-    }
+    "STARTING::Get-AadSupportTokenForUserWithPassword" | Log-AadSupportRunspace
+    "Authority::$Authority" | Log-AadSupportRunspace
+    "ResourceId::$ResourceId" | Log-AadSupportRunspace
+    "ClientId::$ClientId" | Log-AadSupportRunspace
+    "UserId::$UserId" | Log-AadSupportRunspace
+
+    [AadContext]$context = GetOrBuildAuthenticationContext -Authority $Authority
 
     try {
-        return $Global:AadSupportAuthenticationContext.AcquireTokenUsingUsernameAndPassword($ResourceId,$ClientId, $UserId, $Password) | ConvertFrom-Json
+        $AuthenticationResult = $context.AcquireTokenUsingUsernameAndPassword($ResourceId,$ClientId, $UserId, $Password) | ConvertFrom-Json
+        $AuthenticationResult | ConvertTo-Json | Log-AadSupportRunspace
 
+        HandleAuthenticationResult -Authority $Authority -AuthenticationResult $AuthenticationResult
+
+        return $AuthenticationResult
     }
     catch {
         return @{
@@ -363,15 +394,11 @@ function Get-AadSupportTokenForClient
         [string]$ClientSecret
     )
 
-    if(!$Global:AadSupportAuthenticationContext)
-    {
-        $Global:AadSupportAuthenticationContext = [AadContext]::new($Authority)
-    }
-
+    $context = GetOrBuildAuthenticationContext -Authority $Authority
     $AuthenticationResult = ""
     try {
         
-        $AuthenticationResult = $Global:AadSupportAuthenticationContext.AcquireToken($ResourceId,$ClientId,$ClientSecret)  | ConvertFrom-Json
+        $AuthenticationResult = $context.AcquireToken($ResourceId,$ClientId,$ClientSecret)  | ConvertFrom-Json
        
     }
     catch {
@@ -383,6 +410,39 @@ function Get-AadSupportTokenForClient
 
     return $AuthenticationResult
 }
-<#
-Get-AadSupportTokenForUser -Authority "https://login.microsoftonline.com/williamfiddes.onmicrosoft.com" -ClientId "83258bc7-b7fd-4627-ae9b-e3bd5d550572" -ResourceId "https://graph.microsoft.com" -RedirectURI "https://login.microsoftonline.com/common/oauth2/nativeclient"
-#>
+
+<### HELPER FUNCTIONS ###>
+
+function GetOrBuildAuthenticationContext
+{
+    Param($Authority)
+
+    if(!$Global:AadSupportAuthenticationContext)
+    {
+        "GetOrBuildAuthenticationContext::Creating Authentication Context Hashtable" | Log-AadSupportRunspace
+        $Global:AadSupportAuthenticationContext = [hashtable]::new()
+    }
+
+    if(!$Global:AadSupportAuthenticationContext[$Authority])
+    {
+        "GetOrBuildAuthenticationContext::Creating Authentication Context for '$Authority'" | Log-AadSupportRunspace
+        $Global:AadSupportAuthenticationContext[$Authority] = [AadContext]::new($Authority)
+    }
+
+    "GetOrBuildAuthenticationContext::Grabbed Authentication Context for '$Authority'" | Log-AadSupportRunspace
+    $Global:AadSupportAuthenticationContext[$Authority] | ConvertTo-Json | Log-AadSupportRunspace
+    return [AadContext]$Global:AadSupportAuthenticationContext[$Authority]
+}
+
+function HandleAuthenticationResult
+{
+    Param(
+        $Authority,
+        $AuthenticationResult
+    )
+
+    $Global:AadSupportAuthenticationContext[$AuthenticationResult.Authority] = $Global:AadSupportAuthenticationContext[$Authority]
+
+    #$index = $Global:AadSupportAuthenticationContext.Keys.IndexOf($Authority)
+    #$Global:AadSupportAuthenticationContext[$index] = $AuthenticationResult.Authority
+}

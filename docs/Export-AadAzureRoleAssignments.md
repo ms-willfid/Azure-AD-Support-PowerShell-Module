@@ -1,6 +1,6 @@
 ---
 external help file: _RootModuleShared-help.xml
-Module Name: AadSupport
+Module Name: AadSupportPreview
 online version:
 schema: 2.0.0
 ---
@@ -13,7 +13,7 @@ Exports all Azure Role Assignments from all subscriptions in which you have read
 ## SYNTAX
 
 ```
-Export-AadAzureRoleAssignments
+Export-AadAzureRoleAssignments [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -63,6 +63,9 @@ Export-AadAzureRoleAssignments
 ```
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

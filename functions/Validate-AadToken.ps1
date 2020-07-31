@@ -66,7 +66,7 @@ function Test-AadToken
     # Get claims for OAuth2Token
     $TokenClaims = ConvertFrom-AadJwtToken $JwtToken
 
-    if($TokenClaims.aud -eq "https://graph.microsoft.com" -or $TokenClaims.aud -eq "00000003-0000-0000-c000-000000000000")
+    if($TokenClaims.aud -eq $Global:AadSupport.Resources.MsGraph -or $TokenClaims.aud -eq "00000003-0000-0000-c000-000000000000")
     {
         Write-Host "WARNING! Microsoft Graph tokens can't be validated" -ForegroundColor Red
     }
@@ -107,7 +107,7 @@ function Test-AadToken
     $ListOfKeysChecked = @()
     foreach($SigningKey in $SigningKeys)
     {
-        if(!$ListOfKeysChecked.Contains($SigningKey.Kid))
+        if(!$ListOfKeysChecked.Contains($SigningKey.Kid) -and $SigningKey.Kid)
         {
             $ListOfKeysChecked += $SigningKey.Kid
             $tokenParts = $JwtToken.Split('.')

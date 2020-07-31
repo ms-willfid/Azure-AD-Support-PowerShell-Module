@@ -116,14 +116,14 @@ function Get-AadToken
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$true)]
         [string]$RefreshToken,
 
-        [string]$ResourceId = "https://graph.microsoft.com",
+        [string]$ResourceId = $($Global:AadSupport.Resources.MsGraph),
         
         [Parameter(ParameterSetName="UseClientCredential", Mandatory=$true)]
         [Parameter(ParameterSetName="UseRefreshToken", Mandatory=$false)]
         [Parameter(ParameterSetName="UseResourceOwner", Mandatory=$false)]
         [string]$Tenant,
 
-        [string]$Scopes = "openid email profile offline_access https://graph.microsoft.com/.default",
+        [string]$Scopes = "openid email profile offline_access $($Global:AadSupport.Resources.MsGraph)/.default",
         [string]$Redirect = $null,
         [string]$Instance = "https://login.microsoftonline.com",
         

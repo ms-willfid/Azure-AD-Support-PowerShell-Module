@@ -12,7 +12,7 @@
     ResourceName | Name of the resource
     ResourceId  | Service Principal Object ID of the resource
     PrincipalId | Service Principal Object ID of the user
-    Permissions | List of scopes or role claim values
+    ClaimValue | List of scopes or role claim values
     Id | Id of the OAuth2PermissionGrant/AppRole
     ConsentType | Expected values: AdminConsent, UserConsent
 
@@ -83,7 +83,7 @@ function Get-AadConsent
     # Start building the OAuth2PermissionGrant Filter
     $GrantFilterBuilder = @()
 
-    if($ConsentType -eq "User")
+    if($ConsentType -eq "User" -and !$UserId)
     {
         $GrantFilterBuilder += "consentType eq 'Principal'"
     }
@@ -92,7 +92,7 @@ function Get-AadConsent
         $GrantFilterBuilder += "consentType eq 'AllPrincipals'"
     }
 
-    $GrantUri = "https://graph.microsoft.com/beta/oauth2PermissionGrants?`$top=999"
+    $GrantUri = "$($Global:AadSupport.Resources.MsGraph)/beta/oauth2PermissionGrants?`$top=999"
 
     $Resource = $null
     if($ResourceId)
@@ -103,7 +103,7 @@ function Get-AadConsent
             throw "$ResourceId not found!"
         }
 
-        $RoleUri = "https://graph.microsoft.com/beta/servicePrincipals/$($Resource.ObjectId)/appRoleAssignedTo?`$top=999"
+        $RoleUri = "$($Global:AadSupport.Resources.MsGraph)/beta/servicePrincipals/$($Resource.ObjectId)/appRoleAssignedTo?`$top=999"
 
         $GrantFilterBuilder += "resourceId eq '$($Resource.ObjectId)'"
     }
@@ -118,7 +118,7 @@ function Get-AadConsent
             throw "$ClientId not found!"
         }
         
-        $RoleUri = "https://graph.microsoft.com/beta/servicePrincipals/$($Client.ObjectId)/appRoleAssignments?`$top=999"
+        $RoleUri = "$($Global:AadSupport.Resources.MsGraph)/beta/servicePrincipals/$($Client.ObjectId)/appRoleAssignments?`$top=999"
         
         $GrantFilterBuilder += "clientId eq '$($Client.ObjectId)'"
     }
@@ -335,23 +335,4 @@ function Get-AadConsent
     }
 
     return $Permissions
-}
-
-
-function Test-GetAadConsent
-{
-    Remove-Module AadSupportPreview
-    Import-Module AadSupportPreview
-    Connect-AadSupport
-
-    Get-AadConsent -ClientId 'test native app' -ResourceId 'Test Web API'
-    Get-AadConsent -ClientId 'test native app'
-    Get-AadConsent -ResourceId 'Microsoft Graph'
-    Get-AadConsent -UserId admin@williamfiddes.onmicrosoft.com
-    Get-AadConsent -UserId admin@williamfiddes.onmicrosoft.com -ClientId 'DTM [wsfed enabled]'
-    Get-AadConsent -UserId admin@williamfiddes.onmicrosoft.com -ResourceId 'Microsoft Graph'
-    Get-AadConsent -ResourceId 'Microsoft Graph' -PermissionType Delegated
-    Get-AadConsent -ResourceId 'Microsoft Graph' -PermissionType Application
-    Get-AadConsent -ResourceId 'Microsoft Graph' -ConsentType Admin
-    Get-AadConsent -ResourceId 'Microsoft Graph' -ConsentType User
 }

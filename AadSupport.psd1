@@ -12,7 +12,7 @@
 RootModule = '.\_RootModuleShared.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.4'
+ModuleVersion = '0.3.7'
 
 # ID used to uniquely identify this module
 GUID = '5e5f83b2-7760-43db-aee9-872bf7dfd327'
@@ -64,15 +64,18 @@ ScriptsToProcess = @("_startup.ps1")
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(
+    ".\functions\Add-AadConsent.ps1",
     ".\functions\Connect-AadSupport.ps1",
     ".\functions\ConvertFrom-AadJwtTime.ps1",
     ".\functions\ConvertFrom-AadBase64StringToThumbprint.ps1",
     ".\functions\ConvertFrom-AadThumbprintToBase64String.ps1",
     ".\functions\ConvertFrom-AadBase64Certificate.ps1",
     ".\functions\ConvertFrom-AadJwtToken.ps1",
+    ".\functions\ConvertTo-AadBase64EncodedString.ps1",
     ".\functions\Import-AadAzureRoleAssignments.ps1",
     ".\functions\Export-AadAzureRoleAssignments.ps1",
     ".\functions\Get-AadAdminRolesByObject.ps1",
+    ".\functions\Get-AadAppPermissionInfo.ps1",
     ".\functions\Get-AadApplication.ps1",
     ".\functions\Get-AadAppRolesByObject.ps1",
     ".\functions\Get-AadAzureRoleAssignments.ps1",
@@ -96,10 +99,12 @@ NestedModules = @(
     ".\functions\Get-AadUserInfo.ps1",
     ".\functions\Get-AadUserRealm.ps1",
     ".\functions\Invoke-AadProtectedApi.ps1",
+    ".\functions\New-AadClientAssertion.ps1",
+    ".\functions\New-AadApplicationCertificate.ps1",
     ".\functions\Set-AadConsent.ps1",
     ".\functions\Revoke-AadConsent.ps1",
     ".\functions\Update-AadSupport.ps1",
-    ".\functions\Test-AadToken.ps1"
+    ".\functions\Validate-AadToken.ps1"
 )
 
 # Functions to export from this module

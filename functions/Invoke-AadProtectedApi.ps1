@@ -93,15 +93,8 @@ function Invoke-AadProtectedApi
 
     if($Client -and $Resource)
     {
-        if(!$ClientId)
-        {
-            $ClientId = (Get-AadServicePrincipal -Id $Client).AppId
-        }
-
-        if(!$ResourceId)
-        {
-            $ResourceId = (Get-AadServicePrincipal -Id $Resource).AppId
-        }
+        $ClientId = (Get-AadServicePrincipal -Id $Client).AppId
+        $ResourceId = (Get-AadServicePrincipal -Id $Resource).AppId
         
         if(!$ClientId) {
             $ClientId = $Client
@@ -128,6 +121,8 @@ function Invoke-AadProtectedApi
     $RetryAttempts = 0
     $MaxRetryAttempts = 5
     do {
+        Show-AadSupportStatusBar
+
         # Refresh Token if ClientId and ResourceId provided
         if($ClientId -and $ResourceId)
         {
@@ -135,7 +130,7 @@ function Invoke-AadProtectedApi
             $AccessToken = $token.AccessToken
         }
         
-        Start-Sleep -Milliseconds 60
+        #Start-Sleep -Milliseconds 60
         
         if($nextLink)
         {
@@ -171,7 +166,19 @@ function Invoke-AadProtectedApi
                 $String = $request.Response.Content
             }
 
-            elseif($_.Exception.Response.StatusCode -eq "429")
+            elseif($_.Exception.Response) {
+                $reqstream = $_.Exception.Response.GetResponseStream()
+                $reqstream.Position = 0
+
+                $stream = [System.IO.StreamReader]::new($reqstream)
+                $String = $stream.ReadToEnd()
+                $stream.Close()
+                $reqstream.Close()
+            }
+
+            Write-Host $String -ForegroundColor Yellow
+
+            if($_.Exception.Response.StatusCode -eq "429")
             {
                 Write-Host "Throttling limit hit: StatusCode 429: Waiting 1 minute. It may take up to 5 minutes" -ForegroundColor Yellow
                 Start-Sleep -Seconds 61
@@ -190,21 +197,15 @@ function Invoke-AadProtectedApi
                 Start-Sleep -Seconds 300
                 throw $_
             }
-
-            elseif($_.Exception.Response) {
-                $reqstream = $_.Exception.Response.GetResponseStream()
-                $stream = [System.IO.StreamReader]::new($reqstream)
-                $String = $stream.ReadToEnd()
-                $stream.Close()
-                $reqstream.Close()
-            }
             
-            Write-Host $String
+            
             if($RetryAttempts -gt $MaxRetryAttempts)
             {
                 throw $_
             }
             
+            Write-Host ""
+            Write-Host "Retrying request!" -ForegroundColor Yellow
             continue
         }
     
@@ -242,12 +243,13 @@ function Invoke-AadProtectedApi
     $Result.StatusCode = $request.StatusCode
     $Result.Response = $request
 
-    if($Result.Content)
+    if($Result)
     {
         Write-Verbose $request.Headers
         Write-Verbose $request.StatusCode
         Write-Verbose $Result.Response
     }
+    
 
     $ReturnObject = New-Object -TypeName PsCustomObject -Property $Result
 
@@ -274,18 +276,18 @@ function Test-InvokeAadProtectedApi
     Connect-AadSupport
 
     # Test 1 returned result from a collection
-    $endpoint = "https://graph.microsoft.com/beta/users?`$filter=userPrincipalName eq 'admin@williamfiddes.onmicrosoft.com'"
+    $endpoint = "$($Global:AadSupport.Resources.MsGraph)/beta/users?`$filter=userPrincipalName eq 'admin@williamfiddes.onmicrosoft.com'"
     $result = Invoke-AadProtectedApi -Client 'test native app' -Resource 'Microsoft Graph' -Endpoint $Endpoint
 
     # Test 0 returned results from a collection
-    $endpoint = "https://graph.microsoft.com/beta/users?`$filter=userPrincipalName eq 'admin@williamfiddes.onmicrosot.com'"
+    $endpoint = "$($Global:AadSupport.Resources.MsGraph)/beta/users?`$filter=userPrincipalName eq 'admin@williamfiddes.onmicrosot.com'"
     $result = Invoke-AadProtectedApi -Client 'test native app' -Resource 'Microsoft Graph' -Endpoint $Endpoint
 
     # Test 1 returned result
-    $endpoint = "https://graph.microsoft.com/beta/users/admin@williamfiddes.onmicrosoft.com"
+    $endpoint = "$($Global:AadSupport.Resources.MsGraph)/beta/users/admin@williamfiddes.onmicrosoft.com"
     $result = Invoke-AadProtectedApi -Client 'test native app' -Resource 'Microsoft Graph' -Endpoint $Endpoint
 
     # Test Pagination
-    $endpoint = "https://graph.microsoft.com/beta/users?`$top=10"
+    $endpoint = "$($Global:AadSupport.Resources.MsGraph)/beta/users?`$top=10"
     $result = Invoke-AadProtectedApi -Client 'test native app' -Resource 'Microsoft Graph' -Endpoint $Endpoint
 }

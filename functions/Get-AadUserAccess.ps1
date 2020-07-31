@@ -32,7 +32,7 @@ function Get-AadUserAccess
     # END REGION
     
 
-    $TenantDomain = $Global:AadSupport.Session.TenantDomain
+    $TenantDomain = $Global:AadSupport.Session.TenantId
 
     $user = Invoke-AadCommand -Command {
         Param($Id)

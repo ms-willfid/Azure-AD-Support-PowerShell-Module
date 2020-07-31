@@ -101,11 +101,25 @@ function Get-AadDiscoveryKeys
         $Configuration = (Get-AadOpenIdConnectConfiguration -Tenant $Tenant -AadInstance $AadInstance -ApplicationId $ApplicationId)
     }
 
+    if(!$Configuration)
+    {
+      throw "$Issuer is not valid"
+    }
+
     $KeyUrl = $Configuration.jwks_uri
+
+    if(!$KeyUrl)
+    {
+      throw "$KeyUrl not found"
+    }
 
     # Get the Discovery Keys
     Write-Host "Downloading signing keys from '$KeyUrl'"
     $Keys = (ConvertFrom-Json (Invoke-WebRequest $KeyUrl).Content).Keys
+    if(!$Keys)
+    {
+      throw "$KeyUrl is not valid"
+    }
     
     # Build the Output object
     $ReturnObject = @()

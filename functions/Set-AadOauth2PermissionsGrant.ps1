@@ -16,7 +16,7 @@ function Set-AadOauth2PermissionsGrant
 
     $Scopes = $Scope.Split(" ").Split(";").Split(",")
 
-    $GraphApiUrl = "https://graph.microsoft.com/beta/oauth2PermissionGrants/$Id"
+    $GraphApiUrl = "$($Global:AadSupport.Resources.MsGraph)/beta/oauth2PermissionGrants/$Id"
 
     # GET ACCESS TOKEN FOR AAD GRAPH
     $AccessToken = GetTokenForMsGraph

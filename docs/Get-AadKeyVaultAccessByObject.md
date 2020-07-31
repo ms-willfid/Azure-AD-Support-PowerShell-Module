@@ -1,6 +1,6 @@
 ---
 external help file: _RootModuleShared-help.xml
-Module Name: AadSupport
+Module Name: AadSupportPreview
 online version:
 schema: 2.0.0
 ---

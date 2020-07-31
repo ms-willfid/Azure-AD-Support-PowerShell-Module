@@ -117,7 +117,7 @@ function Get-AadTokenUsingAdal
         [Parameter(Mandatory=$true,Position=0)]
         $ClientId,
 
-        $ResourceId = "https://graph.microsoft.com",
+        $ResourceId = $($Global:AadSupport.Resources.MsGraph),
 
         [Parameter(ParameterSetName="UserAccessToken", Mandatory=$false)]
         [Parameter(ParameterSetName="ClientAccessToken", Mandatory=$false)]
@@ -138,9 +138,8 @@ function Get-AadTokenUsingAdal
         [ValidateSet('Always','Auto','SelectAccount','RefreshSession','Never')]
         $Prompt,
 
-        $Tenant = "common",
-
-        $Instance = "https://login.microsoftonline.com",
+        $Tenant,
+        $Instance,
 
         [Parameter(ParameterSetName="ClientAccessToken", Mandatory=$true)]
         [switch]
@@ -164,6 +163,19 @@ function Get-AadTokenUsingAdal
     if($Password)
     {
         [SecureString]$SecuredPassword = ConvertTo-SecureString $Password -AsPlainText -Force
+    }
+
+    "Get-AadTokenUsingAdal::Params:Instance:$Instance" | Log-AadSupport
+    if(-not $Instance)
+    {
+        if($Global:AadSupport.Session.AadInstance)
+        {
+            $Instance = $Global:AadSupport.Session.AadInstance
+        }
+        else 
+        {
+            $Instance = "https://login.microsoftonline.com"
+        }
     }
     
     if(-not $Tenant)
@@ -240,7 +252,7 @@ function Get-AadTokenUsingAdal
             $result = Get-AadSupportTokenForClient -Authority $Params.Authority -ClientId $Params.ClientId -ResourceId $Params.ResourceId -ClientSecret $Params.ClientSecret
             return $result
         } -Parameters @{
-            Authority = "$Instance/$Tenant"
+            Authority = "$Instance/$Tenant/"
             ResourceId = $ResourceId
             ClientId = $ClientId 
             ClientSecret = $ClientSecret
@@ -260,7 +272,7 @@ function Get-AadTokenUsingAdal
             ResourceId = $ResourceId
             UserId = $UserId
             Password = $SecuredPassword
-            Authority = "$Instance/$Tenant"
+            Authority = "$Instance/$Tenant/"
         }
     }
 
@@ -268,7 +280,7 @@ function Get-AadTokenUsingAdal
     if (-not $UseClientCredential -and -not $UseResourceOwnerPasswordCredential)
     {
 
-            
+        Write-Verbose "Use Interactive flow."
         if($Prompt -ne "Always" -and $Prompt -ne "SelectAccount")
         {
             $result = Invoke-AdalCommand -Command { 
@@ -283,7 +295,7 @@ function Get-AadTokenUsingAdal
                 UserId = $UserId
                 ExtraQueryParameters = $ExtraQueryParams
                 Prompt = $Prompt
-                Authority = "$Instance/$Tenant"
+                Authority = "$Instance/$Tenant/"
             }
             
         }
@@ -297,7 +309,7 @@ function Get-AadTokenUsingAdal
                 return $result
                 
             } -Parameters @{
-                Authority = "$Instance/$Tenant"
+                Authority = "$Instance/$Tenant/"
                 ClientId = $ClientId 
                 ResourceId = $ResourceId
                 RedirectURI = $Redirect

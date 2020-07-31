@@ -67,7 +67,7 @@ function Get-AadAzureRoleAssignments {
     RequireConnectAadSupport
     # END REGION
 
-    $TenantDomain = $Global:AadSupport.Session.TenantId
+    $TenantId = $Global:AadSupport.Session.TenantId
 
     # If ObjectId is used, need to determine what object type it is and set appropraite variables
     if($ObjectId -and (-not $ObjectType -or $ServicePrincipalName))
@@ -80,7 +80,7 @@ function Get-AadAzureRoleAssignments {
         # If no object found throw error
         if(-not $Object)
         {
-            throw "'$ObjectId' not found in '$TenantDomain'"
+            throw "'$ObjectId' not found in '$TenantId'"
         }
     }
     elseif($ServicePrincipalName)
@@ -117,7 +117,7 @@ function Get-AadAzureRoleAssignments {
 
         if(-not $ServicePrincipalName)
         {
-            throw "'$ServicePrincipalId' not found in '$TenantDomain'"
+            throw "'$ServicePrincipalId' not found in '$TenantId'"
         }
     }
 
@@ -133,7 +133,7 @@ function Get-AadAzureRoleAssignments {
 
         if(-not $UserId)
         {
-            throw "'$UserId' not found in '$TenantDomain'"
+            throw "'$UserId' not found in '$TenantId'"
         }
     }
 
