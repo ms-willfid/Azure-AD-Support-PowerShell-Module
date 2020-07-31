@@ -34,7 +34,7 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 ## Version History
 
-### 0.3.7 | Jul-30-2020
+### 0.3.7 | Jul-31-2020
 * Added New-AadClientAssertion
 * Added New-AadApplicationCertificate
 * Added Find-AadAppPermission
