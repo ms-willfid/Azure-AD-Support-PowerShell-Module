@@ -97,7 +97,7 @@ function Set-AadConsent {
 
     
 
-    $GlobalAdminRoleId = ($AllDirectoryRoles | where { $_.displayName -eq 'Company Administrator' }).ObjectId
+    $GlobalAdminRoleId = ($AllDirectoryRoles | where { $_.displayName -eq 'Global Administrator' }).ObjectId
 
     $CompanyAdmins = Invoke-AadCommand -Command {
         Param($GlobalAdminRoleId)

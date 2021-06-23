@@ -1,6 +1,6 @@
 ---
 external help file: _RootModuleShared-help.xml
-Module Name: AadSupport
+Module Name: AadSupportPreview
 online version:
 schema: 2.0.0
 ---
@@ -14,12 +14,12 @@ Converts a single Base64Encoded certificate (Not Chained Ceritificate) to a Cust
 
 ### Default (Default)
 ```
-ConvertFrom-AadBase64Certificate [-Base64String] <String> [<CommonParameters>]
+ConvertFrom-AadBase64Certificate [-Base64String] <String> [-Password <String>] [<CommonParameters>]
 ```
 
 ### Path
 ```
-ConvertFrom-AadBase64Certificate [-Path] <String> [<CommonParameters>]
+ConvertFrom-AadBase64Certificate [-Path] <String> [-Password <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -61,6 +61,21 @@ Required: True
 Position: 1
 Default value: None
 Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -Password
+{{ Fill Password Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 

@@ -44,7 +44,7 @@ function Get-AadServicePrincipalAccess
     # END REGION
     
 
-    $TenantDomain = $Global:AadSupport.Session.TenantDomain
+    $TenantDomain = $Global:AadSupport.Session.TenantId
 
     $sp = (Get-AadServicePrincipal -Id $Id)
     
@@ -70,7 +70,7 @@ function Get-AadServicePrincipalAccess
     $AppRoles = Get-AadAppRolesByObject -ObjectId $sp.ObjectId -ObjectType $sp.ObjectType | ConvertTo-Json
 
     Write-Host "Getting OAuth2PermissionGrants (Delegated Permissions) assigned to Service Principal..."
-    $Grants = Get-AadConsent -ClientId $sp.ObjectId | ConvertTo-Json
+    $Grants = Get-AadConsent -ClientId $sp.ObjectId -PermissionType Delegated | ConvertTo-Json
 
     if(-not $SkipKeyVaultAccess)
     {

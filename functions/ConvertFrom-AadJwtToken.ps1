@@ -63,13 +63,21 @@ function ConvertFrom-AadJwtToken {
 
         else 
         { 
-            $jwtClaims.Add($claim.Name,$claim.Value)
+            try {
+                $jwtClaims.Add($claim.Name,$claim.Value)
+            }
+            catch {
+                Write-Verbose "Duplicate claim $($claim.Name)"
+            }
+            
         }
 
 
     }
 
     $Object = New-Object -TypeName psobject -Property $jwtClaims
+
+    Write-Verbose "Done converting JWT to PSObject."
 
     return $Object
 }

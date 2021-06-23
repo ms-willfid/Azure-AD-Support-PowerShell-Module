@@ -66,7 +66,7 @@ function Test-AadToken
     # Get claims for OAuth2Token
     $TokenClaims = ConvertFrom-AadJwtToken $JwtToken
 
-    if($TokenClaims.aud -eq "https://graph.microsoft.com" -or $TokenClaims.aud -eq "00000003-0000-0000-c000-000000000000")
+    if($TokenClaims.aud -eq $Global:AadSupport.Resources.MsGraph -or $TokenClaims.aud -eq "00000003-0000-0000-c000-000000000000")
     {
         Write-Host "WARNING! Microsoft Graph tokens can't be validated" -ForegroundColor Red
     }
@@ -90,14 +90,21 @@ function Test-AadToken
 
     if($Global:AadSupport.Session.Active)
     {
-        Write-Host ""
-        Write-Host "Getting Keys for the Resource $($TokenClaims.aud)..." -ForegroundColor Yellow
-        $resource = Get-AadServicePrincipal -id $TokenClaims.aud
-        $AppSigningKeys = Get-AadDiscoveryKeys -Issuer $Issuer -ApplicationId $resource.AppId
+        try {
+            Write-Host ""
+            Write-Host "Getting Keys for '$($TokenClaims.aud)' based from 'aud' claim..." -ForegroundColor Yellow
+            $resource = Get-AadServicePrincipal -id $TokenClaims.aud
+            $AppSigningKeys = Get-AadDiscoveryKeys -Issuer $Issuer -ApplicationId $resource.AppId
 
-        Write-Host ""
-        Write-Host "Keys Found..." -ForegroundColor Yellow
-        $AppSigningKeys.Kid
+            Write-Host ""
+            Write-Host "Keys Found..." -ForegroundColor Yellow
+            $AppSigningKeys.Kid
+        }
+        catch {
+            Write-Host "Unable to get keys for '$($TokenClaims.aud)' ServicePrincipal probably does not exist in tenant."
+        }
+
+        
     }
 
     $SigningKeys += $IssuerSigningKeys
@@ -107,7 +114,7 @@ function Test-AadToken
     $ListOfKeysChecked = @()
     foreach($SigningKey in $SigningKeys)
     {
-        if(!$ListOfKeysChecked.Contains($SigningKey.Kid))
+        if(!$ListOfKeysChecked.Contains($SigningKey.Kid) -and $SigningKey.Kid)
         {
             $ListOfKeysChecked += $SigningKey.Kid
             $tokenParts = $JwtToken.Split('.')

@@ -76,7 +76,7 @@ function Get-AadAppRolesByObject {
         $ObjectType = "ServicePrincipal"
     }
 
-    $TenantDomain = $Global:AadSupport.Session.TenantDomain
+    $TenantDomain = $Global:AadSupport.Session.TenantId
 
 
     $AppRoleList = @()

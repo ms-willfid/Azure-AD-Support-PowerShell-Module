@@ -20,7 +20,7 @@ function Invoke-AadCommand
             Position=0,
             ValueFromPipeline = $true
         )]
-        $Command,
+        [ScriptBlock]$Command,
         $Parameters
     )
 
@@ -35,10 +35,15 @@ function Invoke-AadCommand
 
     $Error.Clear()
 
-    if(-not $Global:AadSupport.Session.AccountId)
+    if(-not $Global:AadSupport.Session.Active)
     {
         Write-Host "Need to run Connect-AadSupport" -ForegroundColor Yellow
         throw "Not Authenticated Yet."
+    }
+
+    if(!$AccountId)
+    {
+        $AccountId = ""
     }
 
     # Get Token for AAD Graph to be used for Azure AD PowerShell
@@ -53,7 +58,6 @@ function Invoke-AadCommand
       -HideOutput
 
     $AadAccessToken = $token.AccessToken
-
 
     $token = $null
     # Get Token for MS Graph to be used for Azure AD PowerShell
@@ -88,64 +92,46 @@ function Invoke-AadCommand
 
     }
 
-    $ConnectCommand = {
-        Param($Params)
-        $session = Connect-AzureAd `
-        -TenantId $Params.TenantId `
-        -AzureEnvironmentName $Params.AzureEnvironmentName `
-        -LogLevel $Params.LogLevel `
-        -LogFilePath $Params.LogPath `
-        -AadAccessToken $Params.AadAccessToken `
-        -MsAccessToken $Params.MsAccessToken `
-        -AccountId $Params.AccountId
-        return $session
-    }
-
-    # Set up runspace
-    $PowerShell = [powershell]::Create()
-    $PowerShell.runspace = $Global:AadSupport.Runspace.AzureAd.Instance
-    $RunspaceState = $Global:AadSupport.Runspace.AzureAd.Instance.RunspaceStateInfo.State
-    if($RunspaceState -eq "BeforeOpen")
-    {
-        $PowerShell.runspace = $Global:AadSupport.Runspace.AzureAd.Instance.Open()
-    }
-
+    Write-Verbose "Connect Parameters..."
+    Write-Verbose $ConnectParams | ConvertTo-Json -Depth 99
+    
     # IMPORT LOGGING IN RUNSPACE
-    $PowerShell.runspace.SessionStateProxy.SetVariable('GlobalParams',$Global:AadSupport)
+    $GlobalParams = $Global:AadSupport
 
-    [void]$PowerShell.AddScript({
-        $ImportLogging = "$($GlobalParams.Path)\Internals\imports\Log-AadSupportRunspace.ps1"
-        . $ImportLogging 
-    })
-    
-    $PowerShell.Invoke()
-    $PowerShell.Commands.Clear()
-    
-    # Connect to Azure AD (Connect-AzureAd)
-    [void]$PowerShell.AddScript($ErrorHandlingBegin)
-    [void]$PowerShell.AddScript($ConnectCommand).AddArgument($ConnectParams)
-    $RunConnectAzureAd = $PowerShell.Invoke()
-    $PowerShell.Commands.Clear()
-    
-    # Run command
-    [void]$PowerShell.AddScript($Command).AddArgument($Parameters)
-    $RunCommand = $PowerShell.Invoke()
-    $PowerShell.Commands.Clear()
+    $Global:AadCommandResult = $null
 
-    # Get errors in runspace
-    [void]$PowerShell.AddScript($ErrorHandlingEnd)
-    $ErrorInsideRunspace = $PowerShell.Invoke()
-    $PowerShell.Commands.Clear()
+    $ScriptBlock = {
+      Param(
+          $ConnectParams,
+          $AadCommand,
+          $AadCommandParams,
+          $AadSupport
+      )
 
-    if($RunCommand)
-    {
-        $RunCommand | Log-AadSupport
-        return $RunCommand
+      Write-Verbose "Running Connect-AzureAd"
+
+      # Connect to AAD PowerShell Module
+      $session = Connect-AzureAd `
+        -TenantId $ConnectParams.TenantId `
+        -AzureEnvironmentName $ConnectParams.AzureEnvironmentName `
+        -LogLevel $ConnectParams.LogLevel `
+        -LogFilePath $ConnectParams.LogPath `
+        -AadAccessToken $ConnectParams.AadAccessToken `
+        -MsAccessToken $ConnectParams.MsAccessToken `
+        -AccountId $ConnectParams.AccountId
+
+      # Run the AAD PowerShell Command
+      $Command = [scriptblock]::Create($AadCommand)
+
+      $Results = Invoke-Command -ScriptBlock $Command -ArgumentList $AadCommandParams 
+      $Return = $results | ConvertTo-Json -Depth 99
+      return $Return
+      
     }
 
-    if($ErrorInsideRunspace)
-    {
-        $ErrorInsideRunspace | Log-AadSupport -Force
-        return $ErrorInsideRunspace
-    }
+    $Job = Start-Job -ScriptBlock $ScriptBlock -ArgumentList $ConnectParams, $Command, $Parameters, $Global:AadSupport
+
+    $Results = $Job | Wait-Job | Receive-Job | ConvertFrom-Json
+    return $Results
+
 }

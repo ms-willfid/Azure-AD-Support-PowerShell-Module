@@ -23,9 +23,11 @@ function Log-AadSupport
     {
         if($Force)
         {
+            Write-Verbose $Message
             Log-AadSupportMessage -Message $Message -Force
         }
         else {
+            Write-Verbose $Message
             Log-AadSupportMessage -Message $Message
         }
     }

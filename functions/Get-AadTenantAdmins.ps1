@@ -7,7 +7,7 @@ Gets a list of tenant admins.
 
 .PARAMETER Role
 Provide the role to lookup
-By Default 'Company Administrator' is used
+By Default 'Global Administrator' is used
 
 .EXAMPLE  
 Get-AadTenantAdmins
@@ -30,7 +30,7 @@ function Get-AadTenantAdmins {
     [CmdletBinding(DefaultParameterSetName='All')]
     param (
         [Parameter(Position=0,ParameterSetName="UseRole")]
-        $Role = 'Company Administrator',
+        $Role = 'Global Administrator',
 
         [Parameter(ParameterSetName="GetAll")]
         [switch] $All

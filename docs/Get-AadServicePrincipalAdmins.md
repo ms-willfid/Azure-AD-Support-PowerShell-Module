@@ -1,6 +1,6 @@
 ---
 external help file: _RootModuleShared-help.xml
-Module Name: AadSupport
+Module Name: AadSupportPreview
 online version:
 schema: 2.0.0
 ---
@@ -13,7 +13,7 @@ Gets a list of Service Principals assigned to a Administrator role in Azure AD
 ## SYNTAX
 
 ```
-Get-AadServicePrincipalAdmins
+Get-AadServicePrincipalAdmins [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,6 +27,9 @@ Get-AadServicePrincipalAdmins
 ```
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

@@ -62,11 +62,6 @@ function Revoke-AadConsent {
     )
 
     # Parameter validations
-    if($ApplicationOnly -and $DelegatedOnly)
-    {
-        throw "You can only use one 'ApplicationOnly' or 'DelegatedOnly'"
-    }
-
     if($ClaimValue -and -not $ResourceId)
     {
         throw "You must provide a 'ResoureId' when using 'ClaimValue'"
@@ -78,23 +73,31 @@ function Revoke-AadConsent {
     }
 
 
-    $TenantDomain = $Global:AadSupport.Session.TenantDomain
+    $TenantDomain = $Global:AadSupport.Session.TenantId
 
     # --------------------------------------------------
     # Check if signed in user is Global Admin (As only global admins can perform admin consent)
     $isGlobalAdmin = Invoke-AadCommand -Command {
-        $SignedInUser = Get-AzureAdUser -ObjectId $Global:AadSupport.Session.AccountId
+        Param(
+            $AccountId
+        )
+        $SignedInUser = Get-AzureAdUser -ObjectId $AccountId
         $SignedInUserObjectId = $SignedInUser.ObjectId
-        $GlobalAdminRoleId = (Get-AzureAdDirectoryRole | where { $_.displayName -eq 'Company Administrator' -or $_.displayName -eq 'Application Administrator' }).ObjectId
-        $isGlobalAdmin = (Get-AzureAdDirectoryRoleMember -ObjectId $GlobalAdminRoleId).ObjectId -contains $SignedInUserObjectId
-        return $isGlobalAdmin
+        $GlobalAdminRoleIds = (Get-AzureAdDirectoryRole | where { $_.displayName -eq 'Global Administrator' -or $_.displayName -eq 'Application Administrator' }).ObjectId
+        foreach($GlobalAdminRoleId in $GlobalAdminRoleIds)
+        {
+            if( (Get-AzureAdDirectoryRoleMember -ObjectId $GlobalAdminRoleId).ObjectId -contains $SignedInUserObjectId )
+            {
+                return $true
+            }
+        }
     } -Parameters $Global:AadSupport.Session.AccountId
     
 
     if (-not $isGlobalAdmin)  
     {  
-        Write-Host "Your account '$authUserId' is not a Global Admin in $TenantDomain."
-        throw "Exception: 'Company Administrator' or 'Application Administrator' role REQUIRED"
+        Write-Host "Your account '$($Global:AadSupport.Session.AccountId)' is not a Global Admin in $TenantDomain."
+        throw "Exception: 'Global Administrator' or 'Application Administrator' role REQUIRED"
     } 
 
     $ConsentedPermissions = Get-AadConsent `
@@ -102,7 +105,8 @@ function Revoke-AadConsent {
      -ResourceId $ResourceId `
      -ClaimValue $ClaimValue `
      -ConsentType $ConsentType `
-     -PermissionType $PermissionType
+     -PermissionType $PermissionType `
+     -UserId $UserId
      
     
     $CountRemovedPermissions = 0
@@ -112,7 +116,7 @@ function Revoke-AadConsent {
 
     foreach($Permission in $ConsentedPermissions)
     {
-        $MsGraphUrl = "https://graph.microsoft.com/beta/oauth2PermissionGrants/$($Permission.Id)"
+        $MsGraphUrl = "$($Global:AadSupport.Resources.MsGraph)/beta/oauth2PermissionGrants/$($Permission.Id)"
 
         if($Permission.PermissionType -eq "Delegated")
         {
@@ -153,12 +157,13 @@ function Revoke-AadConsent {
                 } | ConvertTo-Json -Compress
 
                 Write-Host "Removing $($Permission.ResourceName) | $($Permission.ConsentType) $($Permission.PermissionType) permission: $ClaimValue | $($Permission.PrincipalId)"
-             
+
                 Invoke-AadProtectedApi `
                 -Client $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
                 -Resource $Global:AadSupport.Resources.MsGraph `
                 -Endpoint $MsGraphUrl -Method PATCH `
                 -Body $JsonBody
+
             }
 
 
@@ -191,8 +196,8 @@ function Test-RevokeAadConsent
     Import-Module AadSupportPreview
     Connect-AadSupport
 
-    Set-AadConsent -ClientId 'AadSupport UnitTest' -ResourceId 'Microsoft Graph' -Scopes 'User.read' -UserId testuser@williamfiddes.onmicrosoft.com
-    Set-AadConsent -ClientId 'AadSupport UnitTest' -ResourceId 'Microsoft Graph' -Scopes 'User.read' -UserId testuser2@williamfiddes.onmicrosoft.com
+    Add-AadConsent -ClientId 'AadSupport UnitTest' -ResourceId 'Microsoft Graph' -ClaimValue 'User.read' -UserId testuser@williamfiddes.onmicrosoft.com
+    Add-AadConsent -ClientId 'AadSupport UnitTest' -ResourceId 'Microsoft Graph' -ClaimValue 'User.read' -UserId testuser2@williamfiddes.onmicrosoft.com
 
     Revoke-AadConsent -ClientId 'AadSupport UnitTest'
     Revoke-AadConsent -ClientId 'AadSupport UnitTest' -ConsentType User

@@ -55,12 +55,6 @@ function Get-AadServicePrincipal
 
         
     )
-    
-
-    # REQUIRE AadSupport Session
-    # RequireConnectAadSupport
-    # END REGION
-
 
     $Global:ServicePrincipals = @()
     $sp         = $null
@@ -130,14 +124,14 @@ function Get-AadServicePrincipal
 
         } 
 
+        # Search for app based on ServicePrincipalName
+        if(-not $sp) {
+            $sp = GetAadSpByServicePrincipalName $Id
+        }
+
         # Search for app based on DisplayName
         if(-not $sp) {
             $sp = GetAadSpByDisplayName $Id
-        }
-
-        # Search for app based on ServicePrincipalName
-        if(-not $sp) {
-            $sp += GetAadSpByServicePrincipalName $Id
         }
     }
 
@@ -145,7 +139,7 @@ function Get-AadServicePrincipal
 
     # Exit script! Service Principal Not found
     if (-not $sp) {
-        throw "Azure AD Service Principal not found!"
+        throw "$Id Service Principal not found!"
     }
 
     # Service Principal(s) Found > Only return One result
@@ -272,6 +266,11 @@ function GetAadSpByDisplayName
 
     if ($sp) { 
         Write-Verbose "Service Principal(s) '$Id' found using DisplayName"
+    }
+
+    else
+    {
+        Write-Verbose "Service Principal(s) '$Id' NOT found using DisplayName"
     }
 
     return $sp

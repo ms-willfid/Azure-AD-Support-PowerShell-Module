@@ -45,7 +45,7 @@ function Invoke-AzureCommand
       -ResourceId $Global:AadSupport.Resources.AadGraph `
       -ClientId $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
       -Redirect $Global:AadSupport.Clients.AzureAdPowershell.RedirectUri `
-      -Tenant $Global:AadSupport.Session.TenantDomain `
+      -Tenant $Global:AadSupport.Session.TenantId `
       -UserId $Global:AadSupport.Session.AccountId `
       -Prompt "Auto" `
       -SkipServicePrincipalSearch `
@@ -56,7 +56,7 @@ function Invoke-AzureCommand
       -ResourceId $Global:AadSupport.Resources.AzureServiceApi `
       -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
       -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
-      -Tenant $Global:AadSupport.Session.TenantDomain `
+      -Tenant $Global:AadSupport.Session.TenantId `
       -UserId $Global:AadSupport.Session.AccountId `
       -Prompt "Auto" `
       -SkipServicePrincipalSearch `
@@ -66,7 +66,7 @@ function Invoke-AzureCommand
     -ResourceId $Global:AadSupport.Resources.AzureRmApi `
     -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
     -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
-    -Tenant $Global:AadSupport.Session.TenantDomain `
+    -Tenant $Global:AadSupport.Session.TenantId `
     -UserId $Global:AadSupport.Session.AccountId `
     -Prompt "Auto" `
     -SkipServicePrincipalSearch `

@@ -23,11 +23,11 @@ function Log-AadSupportRunspace
     {
         if($Force)
         {
-            'Log-AadSupportMessage -Message $Message -Force'
+            
             Log-AadSupportMessage -Message $Message -Force
         }
         else {
-            'Log-AadSupportMessage -Message $Message -Force'
+            
             Log-AadSupportMessage -Message $Message
         }
     }

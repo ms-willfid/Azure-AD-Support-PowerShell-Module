@@ -27,8 +27,31 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 > Connect-AadSupport
 
+## Announcements
+
+* I will be deprecating Set-AadConsent
+  * Please use Revoke-AadConsnet or Add-AadConsent respectively.
 
 ## Version History
+
+### 0.4.0 | 
+* Added Microsoft Diagnostic tool EULA
+* Code signed
+* Added ConvertFrom-AadImmutableId
+* Added ConvertFrom-AadBase64String
+* bug fixes
+
+### 0.3.7 | Jul-31-2020
+* Added New-AadClientAssertion
+* Added New-AadApplicationCertificate
+* Added Find-AadAppPermission (Correction: This is actually called Get-AadAppPermissionInfo)
+* Added Add-AadConsent
+* Added additional support in Validate-AadToken and Get-AadDiscoveryKeys for third-party IdPs
+* Other bug fixes (There are always bugs)
+
+### 0.3.4 | May-11 2020
+* Added ConvertTo-AadBase64EncodedString
+* Other bug fixes
 
 ### 0.3.3 | Mar-18 2020
 * Added Test-AadToken (alias Validate-AadToken)
@@ -38,8 +61,8 @@ To Sign in with your user and start using the cmdlets available for this module.
 * Made changes to Get-AadDiscoveryKeys (now leverages Get-AadOpenIdConnectConfiguration)
 * Renamed cmdlet from 'Get-AadReportUserMfaEnrollment' to 'Get-AadReportMfaEnrolled'
 * And as usual fixed more bugs
-  > Revoke-AadConent now fixed
-  > ConvertFrom-AadThumbprintToBase64String now Url Decodes
+  * Revoke-AadConent now fixed
+  * ConvertFrom-AadThumbprintToBase64String now Url Decodes
 
 ### 0.3.1 | Mar-9 2020
 * Found and fixed a few bugs.

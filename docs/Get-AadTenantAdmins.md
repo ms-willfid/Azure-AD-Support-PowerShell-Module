@@ -1,6 +1,6 @@
 ---
 external help file: _RootModuleShared-help.xml
-Module Name: AadSupport
+Module Name: AadSupportPreview
 online version:
 schema: 2.0.0
 ---
@@ -64,7 +64,7 @@ Get-AadTenantAdmins -All
 
 ### -Role
 Provide the role to lookup
-By Default 'Company Administrator' is used
+By Default 'Global Administrator' is used
 
 ```yaml
 Type: Object
@@ -73,7 +73,7 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: Company Administrator
+Default value: Global Administrator
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

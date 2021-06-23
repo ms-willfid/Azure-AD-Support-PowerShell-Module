@@ -43,19 +43,29 @@ General notes
 
 function Connect-AadSupport
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='DefaultSet')]
     param (
-        $TenantId = "Common",
-        $AccountId,
-        $Password,
+        [string]$TenantId = "Common",
+
+
+        [string]$AccountId,
+
+        [Parameter(mandatory=$true, ParameterSetName = 'UserPrincipalSet')]
+        [string]$Password,
 
         [ValidateSet("AzureCloud","AzureGermanyCloud","AzureUSGovernment","AzureChinaCloud")]
-        $AzureEnvironmentName = "AzureCloud",
+        [string]$AzureEnvironmentName = "AzureCloud",
+
+        [Parameter(mandatory=$true, ParameterSetName = 'ServicePrincipalSet')]
+        [string]$ClientId,
+
+        [Parameter(mandatory=$true, ParameterSetName = 'ServicePrincipalSet')]
+        [string]$ClientSecret,
 
         [Switch]$EnableLogging
     )
 
-    # Parameter Validations
+    New-AadSupportSession
 
     if($EnableLogging)
     {
@@ -112,9 +122,17 @@ function Connect-AadSupport
             $Global:AadSupport.Resources.AzureServiceApi = "https://management.core.cloudapi.de/"
             $Global:AadSupport.Resources.KeyVault = "https://vault.microsoftazure.de"
         }
-    }
 
-    New-AadSupportSession
+        default 
+        {
+            $Global:AadSupport.Session.AadInstance = "https://login.microsoftonline.com"
+            $Global:AadSupport.Resources.AadGraph = "https://graph.windows.net"
+            $Global:AadSupport.Resources.MsGraph = "https://graph.microsoft.com"
+            $Global:AadSupport.Resources.AzureRmApi = "https://management.azure.com"
+            $Global:AadSupport.Resources.AzureServiceApi = "https://management.core.windows.net"
+            $Global:AadSupport.Resources.KeyVault = "https://vault.azure.net"
+        }
+    }
 
     Write-Host ""
     Write-Host "Connecting to Azure AD PowerShell (Connect-AzureAD)"
@@ -153,10 +171,48 @@ function Connect-AadSupport
             $token = Get-AadTokenUsingAdal `
             -ResourceId $Global:AadSupport.Resources.AadGraph `
             -ClientId $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
+            -Instance $Global:AadSupport.Session.AadInstance `
             -Tenant $TenantId `
             -UserId $AccountId `
             -Password $Password `
             -UseResourceOwnerPasswordCredential `
+            -SkipServicePrincipalSearch `
+            -HideOutput
+
+            $Global:AadSupport.Session.AccountId = $token.DisplayableId
+            $Global:AadSupport.Session.TenantId = $token.TenantId
+
+            $AzureToken = Get-AadTokenUsingAdal `
+            -ResourceId $Global:AadSupport.Resources.AzureRmApi `
+            -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
+            -Instance $Global:AadSupport.Session.AadInstance `
+            -Tenant $TenantId `
+            -UserId $Global:AadSupport.Session.AccountId `
+            -Password $Password `
+            -UseResourceOwnerPasswordCredential `
+            -SkipServicePrincipalSearch `
+            -HideOutput
+        }
+
+        elseif($ClientSecret)
+        {
+            $token = Get-AadTokenUsingAdal `
+            -ResourceId $Global:AadSupport.Resources.AadGraph `
+            -ClientId $ClientId `
+            -ClientSecret $ClientSecret `
+            -UseClientCredential `
+            -Instance $Global:AadSupport.Session.AadInstance `
+            -Tenant $TenantId `
+            -SkipServicePrincipalSearch `
+            -HideOutput
+
+            $AzureToken = Get-AadTokenUsingAdal `
+            -ResourceId $Global:AadSupport.Resources.AzureRmApi `
+            -ClientId $ClientId `
+            -ClientSecret $ClientSecret `
+            -UseClientCredential `
+            -Instance $Global:AadSupport.Session.AadInstance `
+            -Tenant $TenantId `
             -SkipServicePrincipalSearch `
             -HideOutput
         }
@@ -167,9 +223,24 @@ function Connect-AadSupport
                 -ResourceId $Global:AadSupport.Resources.AadGraph `
                 -ClientId $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
                 -Redirect $Global:AadSupport.Clients.AzureAdPowershell.RedirectUri `
+                -Instance $Global:AadSupport.Session.AadInstance `
                 -Tenant $TenantId `
                 -UserId $AccountId `
                 -Prompt $Prompt `
+                -SkipServicePrincipalSearch `
+                -HideOutput
+
+            $Global:AadSupport.Session.AccountId = $token.DisplayableId
+            $Global:AadSupport.Session.TenantId = $token.TenantId
+
+            $token = Get-AadTokenUsingAdal `
+                -ResourceId $Global:AadSupport.Resources.AzureRmApi `
+                -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
+                -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
+                -UserId $Global:AadSupport.Session.AccountId `
+                -Instance $Global:AadSupport.Session.AadInstance `
+                -Tenant $Global:AadSupport.Session.TenantId `
+                -Prompt Never `
                 -SkipServicePrincipalSearch `
                 -HideOutput
         }
@@ -177,25 +248,15 @@ function Connect-AadSupport
         # If we didnt get a token lets stop
         if(!$token)
         {
-            Write-Host "Failed to authenticate. User most likely cancelled." -Foreground Yellow
+            Write-Host "Failed to authenticate. User most likely cancelled." -Foreground Red
             return
         }
 
+        Write-Verbose "Token AuthenticationResult..."
+        Write-Verbose $($token | ConvertTo-Json)
         $Global:AadSupport.Session.AccountId = $token.DisplayableId
         $Global:AadSupport.Session.TenantId = $token.TenantId
 
-        # Get Token for Azure to be used for Azure PowerShell
-        $token = $null
-        $token = Get-AadTokenUsingAdal `
-        -ResourceId $Global:AadSupport.Resources.AzureRmApi `
-        -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
-        -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
-        -UserId $Global:AadSupport.Session.AccountId `
-        -Tenant $Global:AadSupport.Session.TenantId `
-        -Prompt Never `
-        -SkipServicePrincipalSearch `
-        -HideOutput
-        
         $Global:AadSupport.Session.Active = $true
     }
     catch {
