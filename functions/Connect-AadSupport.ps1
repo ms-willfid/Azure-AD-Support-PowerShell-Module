@@ -172,6 +172,20 @@ function Connect-AadSupport
             -ResourceId $Global:AadSupport.Resources.AadGraph `
             -ClientId $Global:AadSupport.Clients.AzureAdPowershell.ClientId `
             -Instance $Global:AadSupport.Session.AadInstance `
+<<<<<<< HEAD
+=======
+            -Tenant $TenantId `
+            -UserId $AccountId `
+            -Password $Password `
+            -UseResourceOwnerPasswordCredential `
+            -SkipServicePrincipalSearch `
+            -HideOutput
+
+            $AzureToken = Get-AadTokenUsingAdal `
+            -ResourceId $Global:AadSupport.Resources.AzureRmApi `
+            -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
+            -Instance $Global:AadSupport.Session.AadInstance `
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
             -Tenant $TenantId `
             -UserId $AccountId `
             -Password $Password `
@@ -257,6 +271,22 @@ function Connect-AadSupport
         $Global:AadSupport.Session.AccountId = $token.DisplayableId
         $Global:AadSupport.Session.TenantId = $token.TenantId
 
+<<<<<<< HEAD
+=======
+        # Get Token for Azure to be used for Azure PowerShell
+        $token = $null
+        $token = Get-AadTokenUsingAdal `
+        -ResourceId $Global:AadSupport.Resources.AzureRmApi `
+        -ClientId $Global:AadSupport.Clients.AzurePowershell.ClientId `
+        -Redirect $Global:AadSupport.Clients.AzurePowershell.RedirectUri `
+        -UserId $Global:AadSupport.Session.AccountId `
+        -Instance $Global:AadSupport.Session.AadInstance `
+        -Tenant $Global:AadSupport.Session.TenantId `
+        -Prompt Never `
+        -SkipServicePrincipalSearch `
+        -HideOutput
+        
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
         $Global:AadSupport.Session.Active = $true
     }
     catch {

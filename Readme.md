@@ -34,6 +34,7 @@ To Sign in with your user and start using the cmdlets available for this module.
 
 ## Version History
 
+<<<<<<< HEAD
 ### 0.4.0 | 
 * Added Microsoft Diagnostic tool EULA
 * Code signed
@@ -45,6 +46,12 @@ To Sign in with your user and start using the cmdlets available for this module.
 * Added New-AadClientAssertion
 * Added New-AadApplicationCertificate
 * Added Find-AadAppPermission (Correction: This is actually called Get-AadAppPermissionInfo)
+=======
+### 0.3.7 | Jul-31-2020
+* Added New-AadClientAssertion
+* Added New-AadApplicationCertificate
+* Added Find-AadAppPermission
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
 * Added Add-AadConsent
 * Added additional support in Validate-AadToken and Get-AadDiscoveryKeys for third-party IdPs
 * Other bug fixes (There are always bugs)

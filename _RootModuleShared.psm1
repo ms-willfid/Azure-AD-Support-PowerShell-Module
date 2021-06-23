@@ -6,7 +6,10 @@ Export-ModuleMember -Function ConvertFrom-AadThumbprintToBase64String
 Export-ModuleMember -Function ConvertFrom-AadBase64String
 Export-ModuleMember -Function ConvertFrom-AadBase64StringToThumbprint
 Export-ModuleMember -Function ConvertFrom-AadBase64Certificate
+<<<<<<< HEAD
 Export-ModuleMember -Function ConvertFrom-AadImmutableId
+=======
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
 Export-ModuleMember -Function ConvertTo-AadBase64EncodedString
 Export-ModuleMember -Function Get-AadAppPermissionInfo
 Export-ModuleMember -Function Get-AadAdminRolesByObject

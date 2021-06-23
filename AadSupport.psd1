@@ -12,7 +12,11 @@
 RootModule = '.\_RootModuleShared.psm1'
 
 # Version number of this module.
+<<<<<<< HEAD:AadSupport.psd1
 ModuleVersion = '0.4.0'
+=======
+ModuleVersion = '0.3.7'
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552:AadSupportPreview.psd1
 
 # ID used to uniquely identify this module
 GUID = '5e5f83b2-7760-43db-aee9-872bf7dfd327'
@@ -72,7 +76,10 @@ NestedModules = @(
     ".\functions\ConvertFrom-AadThumbprintToBase64String.ps1",
     ".\functions\ConvertFrom-AadBase64Certificate.ps1",
     ".\functions\ConvertFrom-AadJwtToken.ps1",
+<<<<<<< HEAD:AadSupport.psd1
     ".\functions\ConvertFrom-AadImmutableId.ps1",
+=======
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552:AadSupportPreview.psd1
     ".\functions\ConvertTo-AadBase64EncodedString.ps1",
     ".\functions\Import-AadAzureRoleAssignments.ps1",
     ".\functions\Export-AadAzureRoleAssignments.ps1",

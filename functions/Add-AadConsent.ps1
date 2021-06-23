@@ -88,7 +88,11 @@ function Add-AadConsent {
         )
         $SignedInUser = Get-AzureAdUser -ObjectId $AccountId
         $SignedInUserObjectId = $SignedInUser.ObjectId
+<<<<<<< HEAD
         $GlobalAdminRoleIds = (Get-AzureAdDirectoryRole | where { $_.displayName -eq 'Global Administrator' -or $_.displayName -eq 'Application Administrator' }).ObjectId
+=======
+        $GlobalAdminRoleIds = (Get-AzureAdDirectoryRole | where { $_.displayName -eq 'Company Administrator' -or $_.displayName -eq 'Application Administrator' }).ObjectId
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
         
         foreach($GlobalAdminRoleId in $GlobalAdminRoleIds)
         {
@@ -105,7 +109,11 @@ function Add-AadConsent {
     if (-not $isGlobalAdmin)  
     {  
         Write-Host "Your account '$($Global:AadSupport.Session.AccountId)' is not a Global Admin in $TenantDomain."
+<<<<<<< HEAD
         throw "Exception: 'Global Administrator' or 'Application Administrator' role REQUIRED\r\n * Application Administrator can only perform consent for delegated permissions"
+=======
+        throw "Exception: 'Company Administrator' or 'Application Administrator' role REQUIRED\r\n * Application Administrator can only perform consent for delegated permissions"
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
     } 
 
     # ++++++++++++++++++++++++

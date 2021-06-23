@@ -108,6 +108,7 @@ function New-AadApplicationCertificate
         }
         
     }
+<<<<<<< HEAD
 
 
     function GetX509Certificate($certThumbprint){
@@ -130,4 +131,6 @@ function New-AadApplicationCertificate
        
        
        }
+=======
+>>>>>>> df812b2feffde2d1fcf1d9bbbe7f62f63115b552
 }
